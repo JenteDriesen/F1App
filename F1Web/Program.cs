@@ -1,5 +1,6 @@
 using F1Data.Interfaces;
 using F1Data.Models;
+using F1Data.Repositories;
 using F1Services.Interfaces;
 using F1Services.Models;
 
@@ -15,6 +16,7 @@ builder.Services.AddHttpClient<IErgastApiClient, ErgastApiClient>();
 
 builder.Services.AddScoped<IStandingsService, StandingsService>();
 builder.Services.AddScoped<IRaceService, RaceService>();
+builder.Services.AddScoped<IRaceRepository, RaceRepository>();
 
 
 var app = builder.Build();

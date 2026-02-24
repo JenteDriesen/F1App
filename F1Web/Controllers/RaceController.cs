@@ -21,5 +21,19 @@ namespace F1Web.Controllers
             var data = await _raceService.GetLastRaceSummaryAsync();
             return Ok(data);
         }
+
+        [HttpGet("nextSessionRace")]
+        public async Task<IActionResult> GetNextSessionAndRace()
+        {
+            var data = await _raceService.GetNextSessionAndRaceAsync();
+            return Ok(data);
+        }
+
+        [HttpGet("nextRaceWeekend")]
+        public async Task<IActionResult> GetNextSession()
+        {
+            var data = await _raceService.GetNextRaceweekendAsync();
+            return Ok(data);
+        }
     }
 }

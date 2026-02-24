@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using F1Data.DTOs;
 using F1Data.Interfaces;
@@ -17,10 +18,39 @@ public class StandingsService : IStandingsService
 
     public async Task<List<DriverStandingDto>> GetDriverStandingsAsync(int? year = null, int? race = null)
     {
+        int chosenYear = year ?? DateTime.Now.Year;
+        int thisYear = DateTime.Now.Year;
+
+        if (chosenYear > thisYear)
+            chosenYear = thisYear;
+        if (chosenYear < 1950)
+            chosenYear = 1950;
+
+        var season = await _ergast.GetJsonAsync($"https://api.jolpi.ca/ergast/f1/{chosenYear}/driverStandings.json");
+
+        using var doc = JsonDocument.Parse(season);
+
+        var lastRace = doc.RootElement
+                          .GetProperty("MRData")
+                          .GetProperty("StandingsTable")
+                          .GetProperty("round")
+                          .GetString()!;
+
+        int lastRaceInt = lastRace != null
+                        ? int.Parse(lastRace)
+                        : 0;
+
+        //if race is out of bounds, default to last race
+        if (!race.HasValue || race <= 0 || race > lastRaceInt)
+        {
+            race = lastRaceInt;
+        }
+        Console.WriteLine($"-----|||||----{chosenYear}-----|||||----{race}-----|||||----");
+
         var url = (year.HasValue && race.HasValue)
-            ? $"https://api.jolpi.ca/ergast/f1/{year}/{race}/driverStandings.json"
+            ? $"https://api.jolpi.ca/ergast/f1/{chosenYear}/{race}/driverStandings.json"
             : year.HasValue
-            ? $"https://api.jolpi.ca/ergast/f1/{year}/driverStandings.json"
+            ? $"https://api.jolpi.ca/ergast/f1/{chosenYear}/driverStandings.json"
             : race.HasValue
             ? $"https://api.jolpi.ca/ergast/f1/current/{race}/driverStandings.json"
             : "https://api.jolpi.ca/ergast/f1/current/driverStandings.json";
