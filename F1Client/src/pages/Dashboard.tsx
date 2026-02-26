@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import CountDown from './CountDownPage';
 import DriverStandingsTable, { type DriverStandingDto } from "../components/DriversStandingsTable";
 import CountDownSessionRace from '../components/CountdownSessionRace';
 
@@ -9,8 +8,8 @@ export default function Dashboard() {
     const [standings, setStandings] = useState<DriverStandingDto[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const [nextRace, setNextRace] = useState<Session>();
-    const [nextSession, setNextSession] = useState<Session>();
+    const [nextRace, setNextRace] = useState();
+    const [nextSession, setNextSession] = useState();
 
     useEffect(() => {
         fetch("/api/race/nextSessionRace")
@@ -23,7 +22,6 @@ export default function Dashboard() {
     }, []);
 
     useEffect(() => {
-        // Fetch current driver standings
         fetch("/api/standings")
             .then(res => res.json())
             .then(data => setStandings(data))
@@ -46,8 +44,9 @@ export default function Dashboard() {
                 </div>
 
                 <div className="col-md-12 col-lg-5">
+                    <h3>Next up:</h3>
                     <Link to="/NextRace" className="text-decoration-none">
-                        <CountDownSessionRace nextSession={nextSession} nextRace={nextRace} />
+                        <CountDownSessionRace nextSession={nextSession ?? null} nextRace={nextRace ?? null} />
                     </Link>
                 </div>
             </div>

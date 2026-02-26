@@ -15,8 +15,12 @@ builder.Services.AddControllers();
 builder.Services.AddHttpClient<IErgastApiClient, ErgastApiClient>();
 
 builder.Services.AddScoped<IStandingsService, StandingsService>();
+
 builder.Services.AddScoped<IRaceService, RaceService>();
 builder.Services.AddScoped<IRaceRepository, RaceRepository>();
+
+builder.Services.AddScoped<IWeatherRepository, WeatherRepository>();
+builder.Services.AddScoped<IWeatherService, WeatherService>();
 
 
 var app = builder.Build();

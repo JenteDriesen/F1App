@@ -19,13 +19,6 @@ public partial class RaceService : IRaceService
         _raceRepository = raceRepository;
     }
 
-    public async Task<string> GetLastRaceSummaryAsync()
-    {
-        var json = ""; //await _ergast.GetLastRaceResultsAsync();
-
-        return json;
-    }
-
     public async Task<Raceweekend> GetNextRaceweekendAsync()
     {
         var weekends = await _raceRepository.GetRaceWeekendsAsync();

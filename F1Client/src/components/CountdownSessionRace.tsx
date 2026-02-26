@@ -1,19 +1,18 @@
-import CountDown from "./countDown";
+import CountDown from "./Countdown";
 
-interface Session {
+export interface Session {
     name: string;
     sessionDateTime: string;
 }
-interface nextSessionRace {
-    nextSession: Session;
-    nextRace: Session;
+interface NextSessionRace {
+    nextSession: Session | null;
+    nextRace: Session | null;
 }
 
-export default function CountDownSessionRace({ nextSession, nextRace }: nextSessionRace) {
+export default function CountDownSessionRace({ nextSession, nextRace }: NextSessionRace) {
 
     return (
         <div className="container my-4 text-center">
-            {nextRace && <h2 >{nextRace.name}</h2>}
             {nextSession && nextRace && nextSession.sessionDateTime !== nextRace.sessionDateTime && (
                 <CountDown name={nextSession.name} sessionDateTime={nextSession.sessionDateTime} />
             )}

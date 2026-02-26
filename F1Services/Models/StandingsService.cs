@@ -45,7 +45,6 @@ public class StandingsService : IStandingsService
         {
             race = lastRaceInt;
         }
-        Console.WriteLine($"-----|||||----{chosenYear}-----|||||----{race}-----|||||----");
 
         var url = (year.HasValue && race.HasValue)
             ? $"https://api.jolpi.ca/ergast/f1/{chosenYear}/{race}/driverStandings.json"

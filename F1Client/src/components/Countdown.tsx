@@ -44,7 +44,12 @@ export default function CountDown({ name, sessionDateTime }: CountDownProps) {
         <div className="container my-4 text-center">
 
             <div className="card p-3 mb-3">
-                <h4>Next session ({name}) starts in</h4>
+                {
+                    name.toLowerCase().includes("prix")
+                        ? <h4>The {name} starts in</h4>
+                        : <h4>Next session ({name}) starts in</h4>
+                }
+
                 <div className="fs-4 fw-semibold">
                     {FormatCountdown(nextSessionCountdown)}
                 </div>

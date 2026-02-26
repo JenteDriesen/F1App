@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Text.Json;
 using F1Data.Interfaces;
 using F1Data.Models;
@@ -64,8 +65,8 @@ public class RaceRepository : IRaceRepository
                     Name = circuit.GetProperty("circuitName").GetString() ?? "unknown",
                     Location = new Location
                     {
-                        Latitude = decimal.TryParse(location.GetProperty("lat").GetString(), out var lat) ? lat : 0,
-                        Longitude = decimal.TryParse(location.GetProperty("long").GetString(), out var lng) ? lng : 0,
+                        Latitude = decimal.TryParse(location.GetProperty("lat").GetString(), CultureInfo.InvariantCulture, out var lat) ? lat : 0m,
+                        Longitude = decimal.TryParse(location.GetProperty("long").GetString(), CultureInfo.InvariantCulture, out var lng) ? lng : 0m,
                         Locality = location.GetProperty("locality").GetString() ?? "unknown",
                         Country = location.GetProperty("country").GetString() ?? "unknown"
                     }

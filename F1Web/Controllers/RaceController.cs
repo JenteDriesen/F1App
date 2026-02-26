@@ -1,4 +1,5 @@
 using F1Services.Interfaces;
+using F1Services.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,17 +10,12 @@ namespace F1Web.Controllers
     public class RaceController : ControllerBase
     {
         private readonly IRaceService _raceService;
+        private readonly IWeatherService _weatherService;
 
-        public RaceController(IRaceService raceService)
+        public RaceController(IRaceService raceService, IWeatherService weatherService)
         {
             _raceService = raceService;
-        }
-
-        [HttpGet("last")]
-        public async Task<IActionResult> GetLastRace()
-        {
-            var data = await _raceService.GetLastRaceSummaryAsync();
-            return Ok(data);
+            _weatherService = weatherService;
         }
 
         [HttpGet("nextSessionRace")]
@@ -30,9 +26,43 @@ namespace F1Web.Controllers
         }
 
         [HttpGet("nextRaceWeekend")]
-        public async Task<IActionResult> GetNextSession()
+        public async Task<IActionResult> GetNextRaceweekend()
         {
             var data = await _raceService.GetNextRaceweekendAsync();
+            return Ok(data);
+        }
+
+        [HttpGet("raceWeekendWeather")]
+        public async Task<IActionResult> GetRaceWeekendWeather()
+        {
+            var weekend = await _raceService.GetNextRaceweekendAsync();
+
+            var lat = weekend.Circuit.Location.Latitude;
+            var lng = weekend.Circuit.Location.Longitude;
+            var startDate = weekend.Sessions[0].SessionDateTime.ToString("yyyy-MM-dd");
+            var endDate = weekend.Sessions[^1].SessionDateTime.ToString("yyyy-MM-dd");
+
+
+            var data =
+                await _weatherService.GetRaceWeekendWeatherAsync(lat, lng, startDate, endDate);
+            return Ok(data);
+        }
+
+        [HttpGet("raceDayWeather")]
+        public async Task<IActionResult> GetRaceDayWeather()
+        {
+            var weekend = await _raceService.GetNextRaceweekendAsync();
+
+            var lat = weekend.Circuit.Location.Latitude;
+            var lng = weekend.Circuit.Location.Longitude;
+
+            var date = weekend.RaceDateTime.ToString("yyy-MM-ddTHH:mm");
+            Console.WriteLine($"{date}");
+
+            var nextDay = weekend.RaceDateTime.AddDays(1).ToString("yyy-MM-dd");
+
+            var data =
+                await _weatherService.GetRaceDayWeatherDetailAsync(lat, lng, date, nextDay);
             return Ok(data);
         }
     }
