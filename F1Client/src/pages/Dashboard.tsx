@@ -35,7 +35,7 @@ export default function Dashboard() {
             <div className="row g-4">
                 <div className="col-md-12 col-lg-7">
                     <Link to="/DriversStandings" className="text-decoration-none">
-                        <div className="card shadow-sm border rounded-4 h-100 hover-card">
+                        <div className="card shadow-sm border border-danger rounded-4 h-100 hover-card">
                             <div className="card-body">
                                 <DriverStandingsTable standings={standings} />
                             </div>

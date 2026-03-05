@@ -72,45 +72,51 @@ public class WeatherService : IWeatherService
 
         var hourly = doc.RootElement.GetProperty("hourly");
 
-        Console.WriteLine($"{dateTime}");
-
-        Console.WriteLine($"|||||| {hourly.GetProperty("time")
-                .EnumerateArray()
-                .Where(d => d.GetString() == dateTime)
-                .GetEnumerator()} ||||||");
-
         var raceIndex = hourly.GetProperty("time")
                               .EnumerateArray()
                               .Select(d => d.GetString() ?? "")
                               .ToList()
                               .FindIndex(t => t == dateTime);
 
+        Console.WriteLine($"{raceIndex}");
+
         RaceWeatherDto raceWeatherDto = new()
         {
             Hour = hourly.GetProperty("time")
                          .EnumerateArray()
                          .Select(d => d.GetString() ?? "")
-
+                         .Skip(raceIndex - 2)
+                         .Take(6)
                          .ToList(),
             Temperature = hourly.GetProperty("temperature_2m")
                          .EnumerateArray()
                          .Select(d => d.GetDouble())
+                         .Skip(raceIndex - 2)
+                         .Take(6)
                          .ToList(),
             Precipitation = hourly.GetProperty("precipitation")
                          .EnumerateArray()
                          .Select(d => d.GetDouble())
+                         .Skip(raceIndex - 2)
+                         .Take(6)
                          .ToList(),
             PrecipitationProbability = hourly.GetProperty("precipitation_probability")
                          .EnumerateArray()
                          .Select(d => d.GetDouble())
+                         .Skip(raceIndex - 2)
+                         .Take(6)
                          .ToList(),
             WindSpeed = hourly.GetProperty("wind_speed_10m")
                          .EnumerateArray()
                          .Select(d => d.GetDouble())
+                         .Skip(raceIndex - 2)
+                         .Take(6)
                          .ToList(),
             WindDirection = hourly.GetProperty("wind_direction_10m")
                          .EnumerateArray()
                          .Select(d => d.GetDouble())
+                         .Skip(raceIndex - 2)
+                         .Take(6)
                          .ToList()
         };
 

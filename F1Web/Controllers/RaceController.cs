@@ -57,13 +57,39 @@ namespace F1Web.Controllers
             var lng = weekend.Circuit.Location.Longitude;
 
             var date = weekend.RaceDateTime.ToString("yyy-MM-ddTHH:mm");
-            Console.WriteLine($"{date}");
 
             var nextDay = weekend.RaceDateTime.AddDays(1).ToString("yyy-MM-dd");
 
             var data =
                 await _weatherService.GetRaceDayWeatherDetailAsync(lat, lng, date, nextDay);
+
+
             return Ok(data);
+        }
+
+        [HttpGet("{year}/{race}/results/race")]
+        public async Task<IActionResult> GetRaceResults(int year, int race, string session)
+        {
+            //geeft resultaat vd race, geef ook fl mee want vroeger was dat een punt waard, zodat je dat in de front visueel kan aanduiden
+            return Ok();
+        }
+
+        [HttpGet("{year}/{race}/results/qualifying")]
+        public async Task<IActionResult> GetQualifyingResults(int year, int race, string session)
+        {
+            return Ok();
+        }
+
+        [HttpGet("{year}/{race}/results/sprint")]
+        public async Task<IActionResult> GetSprintResults(int year, int race, string session)
+        {
+            return Ok();
+        }
+
+        [HttpGet("{year}/{race}/results/sprintqualifying")]
+        public async Task<IActionResult> GetSprintQualifyingResults(int year, int race, string session)
+        {
+            return Ok();
         }
     }
 }

@@ -27,8 +27,6 @@ export default function DriversStandingsPage() {
             setYear(1950);
         }
 
-        console.log(year, race);
-
         const params = new URLSearchParams();
         if (year) params.append("year", year.toString());
         if (race) params.append("race", race.toString());
@@ -66,7 +64,7 @@ export default function DriversStandingsPage() {
                             <input
                                 type="number"
                                 id="yearInput"
-                                className="form-control"
+                                className="form-control border-danger"
                                 value={year ?? ""}
                                 min={1950}
                                 placeholder="Choose year"
@@ -81,7 +79,7 @@ export default function DriversStandingsPage() {
                             <input
                                 type="number"
                                 id="raceInput"
-                                className="form-control"
+                                className="form-control border-danger"
                                 value={race ?? ""}
                                 min={0}
                                 placeholder="Race number (0 = last race)"

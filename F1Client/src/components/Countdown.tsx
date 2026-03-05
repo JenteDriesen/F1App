@@ -42,8 +42,7 @@ export default function CountDown({ name, sessionDateTime }: CountDownProps) {
 
     return (
         <div className="container my-4 text-center">
-
-            <div className="card p-3 mb-3">
+            <div className="card border-0 p-3 mb-3">
                 {
                     name.toLowerCase().includes("prix")
                         ? <h4>The {name} starts in</h4>
