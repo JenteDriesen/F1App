@@ -15,7 +15,7 @@ export default function HourlyWeatherCard({ hourly }: Props) {
     const length = hourly.hour.length;
 
     return (
-        <div >
+        <div>
             Raceday
             <div className="card-body p-1">
                 <div className="d-flex overflow-auto justify-content-center align-items-start">
@@ -37,7 +37,7 @@ export default function HourlyWeatherCard({ hourly }: Props) {
 
                                 <div className="text-muted small mb-1">{hourly.precipitation[i]} mm</div>
 
-                                <div className="small mb-1">💨 {hourly.windSpeed[i]}</div>
+                                <div className="small mb-1">💨 {hourly.windSpeed[i].toFixed(1)}</div>
                                 <div>
                                     <span
                                         style={{

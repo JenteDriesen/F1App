@@ -3,6 +3,7 @@ import Dashboard from './pages/Dashboard'
 import { Routes, Route } from 'react-router-dom';
 import DriversStandingsPage from './pages/DriversStandingsPage';
 import NextWeekendInfoPage from './pages/NextWeekendInfoPage';
+import ResultPage from './pages/ResultPage';
 import NavBar from './components/navbar';
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/DriversStandings" element={<DriversStandingsPage />} />
           <Route path="/NextRace" element={<NextWeekendInfoPage />} />
+          <Route path="/Results" element={<ResultPage />} />
         </Routes>
       </div>
     </>

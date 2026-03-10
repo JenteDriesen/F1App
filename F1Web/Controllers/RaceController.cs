@@ -1,3 +1,4 @@
+using F1Data.Models;
 using F1Services.Interfaces;
 using F1Services.Models;
 using Microsoft.AspNetCore.Http;
@@ -42,7 +43,6 @@ namespace F1Web.Controllers
             var startDate = weekend.Sessions[0].SessionDateTime.ToString("yyyy-MM-dd");
             var endDate = weekend.Sessions[^1].SessionDateTime.ToString("yyyy-MM-dd");
 
-
             var data =
                 await _weatherService.GetRaceWeekendWeatherAsync(lat, lng, startDate, endDate);
             return Ok(data);
@@ -57,39 +57,32 @@ namespace F1Web.Controllers
             var lng = weekend.Circuit.Location.Longitude;
 
             var date = weekend.RaceDateTime.ToString("yyy-MM-ddTHH:mm");
-
             var nextDay = weekend.RaceDateTime.AddDays(1).ToString("yyy-MM-dd");
 
             var data =
                 await _weatherService.GetRaceDayWeatherDetailAsync(lat, lng, date, nextDay);
 
-
             return Ok(data);
         }
 
-        [HttpGet("{year}/{race}/results/race")]
-        public async Task<IActionResult> GetRaceResults(int year, int race, string session)
+        [HttpGet("{year}/{race}/results/{session}")]
+        public async Task<IActionResult> GetRaceResults(int year, int race, string? session = "race")
         {
-            //geeft resultaat vd race, geef ook fl mee want vroeger was dat een punt waard, zodat je dat in de front visueel kan aanduiden
-            return Ok();
+            if (session == "race" || session == "sprint")
+            {
+                return Ok(await _raceService.GetRaceResultsAsync(year, race, session));
+            }
+            if (session.ToLower().Contains("qualifying"))
+            {
+                return Ok(await _raceService.GetQualifyingResultsAsync(year, race, session));
+            }
+            else return BadRequest();
         }
 
-        [HttpGet("{year}/{race}/results/qualifying")]
-        public async Task<IActionResult> GetQualifyingResults(int year, int race, string session)
+        [HttpGet("{year}")]
+        public async Task<IActionResult> GetCompletedRaceWeekends(int year)
         {
-            return Ok();
-        }
-
-        [HttpGet("{year}/{race}/results/sprint")]
-        public async Task<IActionResult> GetSprintResults(int year, int race, string session)
-        {
-            return Ok();
-        }
-
-        [HttpGet("{year}/{race}/results/sprintqualifying")]
-        public async Task<IActionResult> GetSprintQualifyingResults(int year, int race, string session)
-        {
-            return Ok();
+            return Ok(await _raceService.GetCompletedRaceWeekendsAsync(year));
         }
     }
 }

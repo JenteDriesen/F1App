@@ -7,5 +7,8 @@ namespace F1Services.Interfaces;
 public interface IRaceService
 {
     Task<NextSessionAndRaceDto> GetNextSessionAndRaceAsync();
-    Task<Raceweekend> GetNextRaceweekendAsync();
+    Task<RaceWeekend> GetNextRaceweekendAsync();
+    Task<RaceWeekendQualifyingResult> GetQualifyingResultsAsync(int? year, int? race, string? session);
+    Task<RaceWeekendRaceResult> GetRaceResultsAsync(int? year, int? race, string? session);
+    Task<List<RaceWeekendDto>> GetCompletedRaceWeekendsAsync(int? year);
 }

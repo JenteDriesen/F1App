@@ -47,7 +47,7 @@ export default function DailyWeatherCard({ day, index }: Props) {
 
                 <Row className="small g-1 text-center mt-1">
                     <Col>💨</Col>
-                    <Col>{wind} km/h</Col>
+                    <Col>{wind.toFixed(1)} km/h</Col>
                     <Col>
                         <span
                             style={{

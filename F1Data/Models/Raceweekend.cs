@@ -2,7 +2,7 @@ using System;
 
 namespace F1Data.Models;
 
-public class Raceweekend
+public class RaceWeekend
 {
     public int Season { get; set; }
     public int Round { get; set; }
