@@ -49,26 +49,28 @@ public class RaceRepository : IRaceRepository
                 .OrderBy(s => s.SessionDateTime)
                 .ToList();
 
-            weekends.Add(new RaceWeekend
-            {
-                Season = int.TryParse(race.GetProperty("season").GetString(), out var season) ? season : 0,
-                Round = int.TryParse(race.GetProperty("round").GetString(), out var round) ? round : 0,
-                Name = race.GetProperty("raceName").GetString() ?? "unknown",
-                Circuit = new Circuit
+
+            if (race.TryGetProperty("round", out var round))
+                weekends.Add(new RaceWeekend
                 {
-                    Id = circuit.GetProperty("circuitId").GetString() ?? "unknown",
-                    Name = circuit.GetProperty("circuitName").GetString() ?? "unknown",
-                    Location = new Location
+                    Season = int.TryParse(race.GetProperty("season").GetString(), out var season) ? season : 0,
+                    Round = int.Parse(round.ToString()),
+                    Name = race.GetProperty("raceName").GetString() ?? "unknown",
+                    Circuit = new Circuit
                     {
-                        Latitude = decimal.TryParse(location.GetProperty("lat").GetString(), CultureInfo.InvariantCulture, out var lat) ? lat : 0m,
-                        Longitude = decimal.TryParse(location.GetProperty("long").GetString(), CultureInfo.InvariantCulture, out var lng) ? lng : 0m,
-                        Locality = location.GetProperty("locality").GetString() ?? "unknown",
-                        Country = location.GetProperty("country").GetString() ?? "unknown"
-                    }
-                },
-                RaceDateTime = DateTimeOffset.Parse($"{race.GetProperty("date").GetString()}T{race.GetProperty("time").GetString()}").UtcDateTime,
-                Sessions = orderedSessions
-            });
+                        Id = circuit.GetProperty("circuitId").GetString() ?? "unknown",
+                        Name = circuit.GetProperty("circuitName").GetString() ?? "unknown",
+                        Location = new Location
+                        {
+                            Latitude = decimal.TryParse(location.GetProperty("lat").GetString(), CultureInfo.InvariantCulture, out var lat) ? lat : 0m,
+                            Longitude = decimal.TryParse(location.GetProperty("long").GetString(), CultureInfo.InvariantCulture, out var lng) ? lng : 0m,
+                            Locality = location.GetProperty("locality").GetString() ?? "unknown",
+                            Country = location.GetProperty("country").GetString() ?? "unknown"
+                        }
+                    },
+                    RaceDateTime = DateTimeOffset.Parse($"{race.GetProperty("date").GetString()}T{race.GetProperty("time").GetString()}").UtcDateTime,
+                    Sessions = orderedSessions
+                });
         }
 
         return weekends;

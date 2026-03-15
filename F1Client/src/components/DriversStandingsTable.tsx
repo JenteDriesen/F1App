@@ -39,7 +39,12 @@ export default function DriverStandingsTable({ standings, year }: Props) {
                 <tbody>
                     {standings.map(driver => (
                         <tr key={driver.driverId}>
-                            <td className="text-centre">{driver.position}</td>
+                            <td className="text-center">
+                                {driver.position === 1 && <i className="bi bi-award-fill text-warning"> 1</i>}
+                                {driver.position === 2 && <i className="bi bi-award-fill text-secondary"> 2</i>}
+                                {driver.position === 3 && <i className="bi bi-award-fill" style={{ color: "#cd7f32" }}> 3</i>}
+                                {driver.position > 3 && driver.position}
+                            </td>
                             <td className="text-start">{driver.name}</td>
                             <td className="text-start">{driver.constructor}</td>
                             <td className="text-centre">{driver.points}</td>

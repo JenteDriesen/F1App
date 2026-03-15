@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using F1Data.DTOs;
@@ -77,7 +78,7 @@ public class StandingsService : IStandingsService
             .Select((d, i) => new DriverStandingDto
             {
                 Position = i + 1,
-                Points = int.Parse(d.GetProperty("points").GetString()),
+                Points = decimal.Parse(d.GetProperty("points").GetString(), CultureInfo.InvariantCulture),
                 Wins = int.Parse(d.GetProperty("wins").GetString()),
                 DriverId = d.GetProperty("Driver").GetProperty("driverId").GetString(),
                 Name = $"{d.GetProperty("Driver").GetProperty("givenName").GetString()} {d.GetProperty("Driver").GetProperty("familyName").GetString()}",

@@ -50,7 +50,7 @@ export default function DriversStandingsPage() {
 
     return (
         <div className="container my-4" style={{ display: "grid", gridTemplateColumns: "220px 1fr 220px", justifyItems: "center", gap: "2rem" }}>
-            <div className="p-4" style={{ width: "220px" }}>
+            <div style={{ width: "200px", paddingTop: "70px" }}>
                 <form
                     onSubmit={(e) => {
                         e.preventDefault();
@@ -60,13 +60,14 @@ export default function DriversStandingsPage() {
                 >
                     <div>
                         <div className="d-flex flex-column align-items-start">
-                            <label htmlFor="yearInput" className="form-label">Year:</label>
+                            <label htmlFor="yearInput" className="form-label fw-bold">Year:</label>
                             <input
                                 type="number"
                                 id="yearInput"
                                 className="form-control border-danger"
                                 value={year ?? ""}
                                 min={1950}
+                                max={currentYear}
                                 placeholder="Choose year"
                                 onChange={(e) => setYear(Number(e.target.value))}
                             />
@@ -75,14 +76,14 @@ export default function DriversStandingsPage() {
 
                     <div>
                         <div className="d-flex flex-column align-items-start">
-                            <label htmlFor="raceInput" className="form-label">Race:</label>
+                            <label htmlFor="raceInput" className="form-label fw-bold">Round:</label>
                             <input
                                 type="number"
                                 id="raceInput"
-                                className="form-control border-danger"
+                                className="form-control border-danger "
                                 value={race ?? ""}
                                 min={0}
-                                placeholder="Race number (0 = last race)"
+                                placeholder="Round (0 = last)"
                                 onChange={(e) => {
                                     const val = e.target.value;
                                     setRace(val === "0" ? null : Number(val));

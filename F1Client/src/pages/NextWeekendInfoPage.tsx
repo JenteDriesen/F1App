@@ -80,7 +80,7 @@ export default function NextWeekendInfoPage() {
             </div>
 
             <div className="row g-4">
-                <div className="col-md-9">
+                <div className="col-md-9 p-2">
                     <WeatherWidget />
                 </div>
 
