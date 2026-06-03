@@ -1,13 +1,25 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>f1app-client</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>f1app-client</title>
+</head>
+
+<body>
+  <!-- splash screen to stop getting flashbanged during reload of pages -->
+  <div id="splash" style="position:fixed;inset:0;z-index:9999;transition:opacity 0.2s ease;"></div>
+  <script>
+    const stored = localStorage.getItem("darkMode");
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const isDark = stored === "true" || (stored === null && prefersDark);
+    if (isDark) document.documentElement.classList.add("dark");
+    document.getElementById("splash").style.background = isDark ? "#27272a" : "#ffffff";
+  </script>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
 </html>

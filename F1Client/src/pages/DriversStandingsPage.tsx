@@ -42,8 +42,8 @@ export default function DriversStandingsPage() {
     if (loading) return <div className="text-zinc-500 dark:text-zinc-400 p-8">Loading...</div>;
 
     return (
-        <div className="flex gap-8 py-6">
-            <aside className="w-48 shrink-0 border-r border-zinc-200 dark:border-zinc-700 pr-4 flex flex-col gap-4">
+        <div className="py-6 min-h-screen">
+            <aside className="w-48 shrink-0 border-r border-zinc-200 dark:border-zinc-700 pr-4 flex flex-col gap-4 fixed top-20  bottom-4 left-6">
                 <div className="flex flex-col gap-1">
                     <label className="text-xs uppercase tracking-widest text-zinc-400">Year</label>
                     <input
@@ -53,7 +53,7 @@ export default function DriversStandingsPage() {
                         max={currentYear}
                         placeholder={String(currentYear)}
                         onChange={e => setYear(Number(e.target.value))}
-                        className="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-1.5 text-sm text-zinc-900 dark:text-white focus:outline-none focus:border-red-500"
+                        className="w-full bg-white dark:bg-zinc-700 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-1.5 text-sm text-zinc-900 dark:text-white focus:outline-none focus:border-red-500"
                     />
                 </div>
 
@@ -68,7 +68,7 @@ export default function DriversStandingsPage() {
                             const val = e.target.value;
                             setRace(val === "0" ? null : Number(val));
                         }}
-                        className="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-1.5 text-sm text-zinc-900 dark:text-white focus:outline-none focus:border-red-500"
+                        className="w-full bg-white dark:bg-zinc-700 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-1.5 text-sm text-zinc-900 dark:text-white focus:outline-none focus:border-red-500"
                     />
                 </div>
 
@@ -80,7 +80,7 @@ export default function DriversStandingsPage() {
                 </button>
             </aside>
 
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 ml-56">
                 <DriverStandingsTable standings={standings} year={year ?? currentYear} />
             </div>
         </div>

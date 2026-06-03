@@ -75,11 +75,11 @@ export default function ResultPage() {
 
     const selectedWeekend = weekends.find(w => w.round === selectedRound);
 
-    const inputClass = "w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-1.5 text-sm text-zinc-900 dark:text-white focus:outline-none focus:border-red-500";
+    const inputClass = "w-full bg-white dark:bg-zinc-700 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-1.5 text-sm text-zinc-900 dark:text-white focus:outline-none focus:border-red-500";
 
     return (
-        <div className="flex gap-8 py-6">
-            <aside className="w-48 shrink-0 border-r border-zinc-200 dark:border-zinc-700 pr-4 flex flex-col gap-4">
+        <div className="py-6 min-h-screen">
+            <aside className="w-48 shrink-0 border-r border-zinc-200 dark:border-zinc-700 pr-4 flex flex-col gap-4 fixed top-20 bottom-4 left-6">
                 <div className="flex flex-col gap-1">
                     <label className="text-xs uppercase tracking-widest text-zinc-400">Year</label>
                     <input
@@ -130,7 +130,7 @@ export default function ResultPage() {
                 )}
             </aside>
 
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 ml-56">
                 {selectedWeekend && (
                     <div className="mb-6 border-b border-zinc-200 dark:border-zinc-700 pb-4">
                         <p className="text-xs uppercase tracking-widest text-red-600 mb-1">

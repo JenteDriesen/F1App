@@ -5,12 +5,21 @@ import DriversStandingsPage from './pages/DriversStandingsPage';
 import NextWeekendInfoPage from './pages/NextWeekendInfoPage';
 import ResultPage from './pages/ResultPage';
 import NavBar from './components/navbar';
+import { useEffect } from 'react';
 
 function App() {
+  useEffect(() => {
+    const splash = document.getElementById("splash");
+    if (splash) {
+      splash.style.opacity = "0";
+      setTimeout(() => splash.remove(), 200);
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-800">
       <NavBar />
-      <div className="pt-16 px-6">
+      <div className="pt-14 px-6">
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/DriversStandings" element={<DriversStandingsPage />} />

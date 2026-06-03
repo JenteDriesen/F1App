@@ -12,7 +12,7 @@ interface NextSessionRace {
 
 export default function CountDownSessionRace({ nextSession, nextRace }: NextSessionRace) {
     return (
-        <div className="rounded-xl p-4 bg-white dark:bg-zinc-900 flex flex-col gap-4">
+        <div className="rounded-xl p-4 bg-white dark:bg-zinc-800 flex flex-col gap-4">
             {nextSession && nextRace && nextSession.sessionDateTime !== nextRace.sessionDateTime && (
                 <CountDown name={nextSession.name} sessionDateTime={nextSession.sessionDateTime} />
             )}

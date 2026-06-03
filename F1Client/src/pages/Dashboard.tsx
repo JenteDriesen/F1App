@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import DriverStandingsTable, { type DriverStandingDto } from "../components/DriversStandingsTable";
 import CountDownSessionRace from '../components/CountdownSessionRace';
@@ -31,7 +31,7 @@ export default function Dashboard() {
         <div className="flex flex-col lg:flex-row gap-6 py-6">
             <div className="flex-1 min-w-0">
                 <Link to="/DriversStandings" className="block h-full no-underline">
-                    <div className="h-full rounded-xl border-2 border-red-600 p-4 bg-white dark:bg-zinc-900 hover:shadow-md transition-shadow">
+                    <div className="h-full rounded-xl border-2 border-red-600 p-4 bg-white dark:bg-zinc-800 hover:shadow-md transition-shadow">
                         <DriverStandingsTable standings={standings} />
                     </div>
                 </Link>
