@@ -20,25 +20,18 @@ export default function DriversStandingsPage() {
     const handleApply = () => {
         setLoading(true);
 
-        if (year === 0 || year === null) {
-            setYear(currentYear);
-        }
-        else if (year <= 1950) {
-            setYear(1950);
-        }
+        const resolvedYear = (!year || year <= 0) ? currentYear : Math.max(1950, year);
+        if (resolvedYear !== year) setYear(resolvedYear);
 
         const params = new URLSearchParams();
-        if (year) params.append("year", year.toString());
+        if (year) params.append("year", resolvedYear.toString());
         if (race) params.append("race", race.toString());
 
         const url = params.toString() ? `/api/standings?${params.toString()}` : "/api/standings";
 
         fetch(url)
             .then(res => {
-                if (!res.ok) {
-                    setStandings([]);
-                    throw new Error("Failed to fetch driver standings");
-                }
+                if (!res.ok) { setStandings([]); throw new Error("Failed to fetch"); }
                 return res.json();
             })
             .then(data => setStandings(data))
@@ -46,61 +39,50 @@ export default function DriversStandingsPage() {
             .finally(() => setLoading(false));
     };
 
-    if (loading) return <div>Loading...</div>;
+    if (loading) return <div className="text-zinc-500 dark:text-zinc-400 p-8">Loading...</div>;
 
     return (
-        <div className="container my-4" style={{ display: "grid", gridTemplateColumns: "220px 1fr 220px", justifyItems: "center", gap: "2rem" }}>
-            <div style={{ width: "200px", paddingTop: "70px" }}>
-                <form
-                    onSubmit={(e) => {
-                        e.preventDefault();
-                        handleApply();
-                    }}
-                    className="d-flex flex-column gap-3"
+        <div className="flex gap-8 py-6">
+            <aside className="w-48 shrink-0 border-r border-zinc-200 dark:border-zinc-700 pr-4 flex flex-col gap-4">
+                <div className="flex flex-col gap-1">
+                    <label className="text-xs uppercase tracking-widest text-zinc-400">Year</label>
+                    <input
+                        type="number"
+                        value={year ?? ""}
+                        min={1950}
+                        max={currentYear}
+                        placeholder={String(currentYear)}
+                        onChange={e => setYear(Number(e.target.value))}
+                        className="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-1.5 text-sm text-zinc-900 dark:text-white focus:outline-none focus:border-red-500"
+                    />
+                </div>
+
+                <div className="flex flex-col gap-1">
+                    <label className="text-xs uppercase tracking-widest text-zinc-400">Round</label>
+                    <input
+                        type="number"
+                        value={race ?? ""}
+                        min={0}
+                        placeholder="Last"
+                        onChange={e => {
+                            const val = e.target.value;
+                            setRace(val === "0" ? null : Number(val));
+                        }}
+                        className="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-1.5 text-sm text-zinc-900 dark:text-white focus:outline-none focus:border-red-500"
+                    />
+                </div>
+
+                <button
+                    onClick={handleApply}
+                    className="w-full py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-colors"
                 >
-                    <div>
-                        <div className="d-flex flex-column align-items-start">
-                            <label htmlFor="yearInput" className="form-label fw-bold">Year:</label>
-                            <input
-                                type="number"
-                                id="yearInput"
-                                className="form-control border-danger"
-                                value={year ?? ""}
-                                min={1950}
-                                max={currentYear}
-                                placeholder="Choose year"
-                                onChange={(e) => setYear(Number(e.target.value))}
-                            />
-                        </div>
-                    </div>
+                    Apply
+                </button>
+            </aside>
 
-                    <div>
-                        <div className="d-flex flex-column align-items-start">
-                            <label htmlFor="raceInput" className="form-label fw-bold">Round:</label>
-                            <input
-                                type="number"
-                                id="raceInput"
-                                className="form-control border-danger "
-                                value={race ?? ""}
-                                min={0}
-                                placeholder="Round (0 = last)"
-                                onChange={(e) => {
-                                    const val = e.target.value;
-                                    setRace(val === "0" ? null : Number(val));
-                                }}
-                            />
-                        </div>
-                    </div>
-
-                    <button type="submit" className="btn btn-primary mt-2">Apply</button>
-                </form>
-            </div>
-
-            <div className="p-3" style={{ minWidth: "600px" }}>
+            <div className="flex-1 min-w-0">
                 <DriverStandingsTable standings={standings} year={year ?? currentYear} />
             </div>
-
-            <div></div>
         </div>
     );
 }

@@ -3,11 +3,9 @@ import { Link } from "react-router-dom";
 import DriverStandingsTable, { type DriverStandingDto } from "../components/DriversStandingsTable";
 import CountDownSessionRace from '../components/CountdownSessionRace';
 
-
 export default function Dashboard() {
     const [standings, setStandings] = useState<DriverStandingDto[]>([]);
     const [loading, setLoading] = useState(true);
-
     const [nextRace, setNextRace] = useState();
     const [nextSession, setNextSession] = useState();
 
@@ -17,7 +15,6 @@ export default function Dashboard() {
             .then(data => {
                 setNextSession(data.nextSession);
                 setNextRace(data.nextRace);
-                setLoading(false);
             });
     }, []);
 
@@ -28,27 +25,23 @@ export default function Dashboard() {
             .finally(() => setLoading(false));
     }, []);
 
-    if (loading) return <div>Loading dashboard...</div>;
+    if (loading) return <div className="text-zinc-500 dark:text-zinc-400">Loading dashboard...</div>;
 
     return (
-        <div className="container-fluid py-4">
-            <div className="row g-4">
-                <div className="col-md-12 col-lg-7">
-                    <Link to="/DriversStandings" className="text-decoration-none">
-                        <div className="card shadow-sm border-2 border-danger rounded-4 h-100 hover-card">
-                            <div className="card-body">
-                                <DriverStandingsTable standings={standings} />
-                            </div>
-                        </div>
-                    </Link>
-                </div>
+        <div className="flex flex-col lg:flex-row gap-6 py-6">
+            <div className="flex-1 min-w-0">
+                <Link to="/DriversStandings" className="block h-full no-underline">
+                    <div className="h-full rounded-xl border-2 border-red-600 p-4 bg-white dark:bg-zinc-900 hover:shadow-md transition-shadow">
+                        <DriverStandingsTable standings={standings} />
+                    </div>
+                </Link>
+            </div>
 
-                <div className="col-md-12 col-lg-5">
-                    <h3>Next up:</h3>
-                    <Link to="/NextRace" className="text-decoration-none">
-                        <CountDownSessionRace nextSession={nextSession ?? null} nextRace={nextRace ?? null} />
-                    </Link>
-                </div>
+            <div className="flex-1 flex flex-col gap-4">
+                <h3 className="text-lg font-bold text-zinc-900 dark:text-white">Next up</h3>
+                <Link to="/NextRace" className="no-underline">
+                    <CountDownSessionRace nextSession={nextSession ?? null} nextRace={nextRace ?? null} />
+                </Link>
             </div>
         </div>
     );

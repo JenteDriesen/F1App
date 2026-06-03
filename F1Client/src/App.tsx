@@ -7,11 +7,10 @@ import ResultPage from './pages/ResultPage';
 import NavBar from './components/navbar';
 
 function App() {
-
   return (
-    <>
+    <div className="min-h-screen bg-white dark:bg-zinc-800">
       <NavBar />
-      <div className="container mt-3">
+      <div className="pt-16 px-6">
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/DriversStandings" element={<DriversStandingsPage />} />
@@ -19,7 +18,7 @@ function App() {
           <Route path="/Results" element={<ResultPage />} />
         </Routes>
       </div>
-    </>
+    </div>
   )
 }
 

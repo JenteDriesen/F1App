@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import DailyWeatherCard from "./DailyWeatherCard";
-import { Card, Col, Row } from "react-bootstrap";
 import HourlyWeatherCard from "./HourlyWeatherCard";
 
 interface DailyApiResponse {
@@ -14,7 +13,7 @@ interface DailyApiResponse {
     windSpeedMax: number[];
 }
 
-interface HourlyApiRespone {
+interface HourlyApiResponse {
     hour: string[];
     temperature: number[];
     precipitation: number[];
@@ -25,15 +24,13 @@ interface HourlyApiRespone {
 
 export default function WeatherWidget() {
     const [daily, setDaily] = useState<DailyApiResponse>();
-    const [hourly, setHourly] = useState<HourlyApiRespone>();
+    const [hourly, setHourly] = useState<HourlyApiResponse>();
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         Promise.all([
-            fetch("/api/race/raceWeekendWeather")
-                .then(res => res.json()),
-            fetch("/api/race/raceDayWeather")
-                .then(res => res.json())
+            fetch("/api/race/raceWeekendWeather").then(res => res.json()),
+            fetch("/api/race/raceDayWeather").then(res => res.json())
         ]).then(([dailyData, hourlyData]) => {
             setDaily(dailyData);
             setHourly(hourlyData);
@@ -41,24 +38,16 @@ export default function WeatherWidget() {
         });
     }, []);
 
-
-    if (loading) return <p>Loading weekend weather...</p>;
+    if (loading) return <p className="text-zinc-500 dark:text-zinc-400">Loading weekend weather...</p>;
 
     return (
-        <>
-            <Card className="border-0 p-2">
-                <Row className="g-3 mb-3 justify-content-center">
-                    <Col xs="auto">
-                        <DailyWeatherCard day={daily!} index={0} />
-                    </Col>
-                    <Col xs="auto">
-                        <DailyWeatherCard day={daily!} index={1} />
-                    </Col>
-                </Row>
-                <Row className="g-3 justify-content-center">
-                    <HourlyWeatherCard hourly={hourly!} />
-                </Row>
-            </Card>
-        </>
+        <div className="rounded-xl  p-4 bg-white dark:bg-zinc-900">
+            <p className="text-xs uppercase tracking-widest text-zinc-400 mb-3">Weekend weather</p>
+            <div className="flex gap-4 mb-6">
+                <DailyWeatherCard day={daily!} index={0} />
+                <DailyWeatherCard day={daily!} index={1} />
+            </div>
+            <HourlyWeatherCard hourly={hourly!} />
+        </div>
     );
 }
