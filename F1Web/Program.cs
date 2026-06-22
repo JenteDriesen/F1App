@@ -35,5 +35,15 @@ app.UseHttpsRedirection();
 
 app.MapControllers();
 
+app.Lifetime.ApplicationStarted.Register(async () =>
+{
+    using var scope = app.Services.CreateScope();
+    var raceService = scope.ServiceProvider.GetRequiredService<IRaceService>();
+    var standingsService = scope.ServiceProvider.GetRequiredService<IStandingsService>();
+
+    await raceService.GetNextSessionAndRaceAsync();
+    await standingsService.GetDriverStandingsAsync(null, null);
+});
+
 app.Run();
 

@@ -219,9 +219,6 @@ public class RaceRepository : IRaceRepository
 
         var results = await _ergast.GetJsonAsync($"https://api.jolpi.ca/ergast/f1/{year.ToString() ?? "current"}/last/results.json");
 
-        Console.WriteLine($"{results} ||||///////||");
-
-
         using var doc = JsonDocument.Parse(results);
 
         var lastRound = doc.RootElement

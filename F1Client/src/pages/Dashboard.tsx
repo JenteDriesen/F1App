@@ -1,28 +1,39 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import DriverStandingsTable, { type DriverStandingDto } from "../components/DriversStandingsTable";
-import CountDownSessionRace from '../components/CountdownSessionRace';
+import CountDownSessionRace, { type Session } from '../components/CountdownSessionRace';
+
+interface SessionRaceData {
+    nextSession: Session;
+    nextRace: Session;
+}
+
+const fetchWithRetry = <T,>(url: string, retries = 3, delay = 500): Promise<T> =>
+    fetch(url).then(res => {
+        if (!res.ok) throw new Error(res.statusText);
+        return res.json() as Promise<T>;
+    }).catch(err => {
+        if (retries === 0) throw err;
+        return new Promise<T>(resolve => setTimeout(resolve, delay))
+            .then(() => fetchWithRetry<T>(url, retries - 1, delay));
+    });
 
 export default function Dashboard() {
     const [standings, setStandings] = useState<DriverStandingDto[]>([]);
     const [loading, setLoading] = useState(true);
-    const [nextRace, setNextRace] = useState();
-    const [nextSession, setNextSession] = useState();
+    const [nextRace, setNextRace] = useState<Session | null>(null);
+    const [nextSession, setNextSession] = useState<Session | null>(null);
 
     useEffect(() => {
-        fetch("/api/race/nextSessionRace")
-            .then(res => res.json())
-            .then(data => {
-                setNextSession(data.nextSession);
-                setNextRace(data.nextRace);
-            });
-    }, []);
-
-    useEffect(() => {
-        fetch("/api/standings")
-            .then(res => res.json())
-            .then(data => setStandings(data))
-            .finally(() => setLoading(false));
+        Promise.all([
+            fetchWithRetry<DriverStandingDto[]>("/api/standings"),
+            fetchWithRetry<SessionRaceData>("/api/race/nextSessionRace"),
+        ]).then(([standingsData, sessionData]) => {
+            setStandings(standingsData);
+            setNextSession(sessionData.nextSession);
+            setNextRace(sessionData.nextRace);
+            setLoading(false);
+        }).catch(() => setLoading(false));
     }, []);
 
     if (loading) return <div className="text-zinc-500 dark:text-zinc-400">Loading dashboard...</div>;
@@ -38,9 +49,8 @@ export default function Dashboard() {
             </div>
 
             <div className="flex-1 flex flex-col gap-4">
-                <h3 className="text-lg font-bold text-zinc-900 dark:text-white">Next up</h3>
                 <Link to="/NextRace" className="no-underline">
-                    <CountDownSessionRace nextSession={nextSession ?? null} nextRace={nextRace ?? null} />
+                    <CountDownSessionRace nextSession={nextSession} nextRace={nextRace} />
                 </Link>
             </div>
         </div>
