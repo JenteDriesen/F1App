@@ -1,0 +1,9 @@
+{
+    "name": "f1app",
+    "scripts": {
+        "dev": "concurrently \"dotnet run --project F1Web\" \"npm run dev --prefix F1Client\""
+    },
+    "devDependencies": {
+        "concurrently": "^10.0.3"
+    }
+}

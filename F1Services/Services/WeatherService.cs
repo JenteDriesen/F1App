@@ -78,7 +78,7 @@ public class WeatherService : IWeatherService
                               .ToList()
                               .FindIndex(t => t == dateTime);
 
-        Console.WriteLine($"{raceIndex}");
+        //Console.WriteLine($"{raceIndex}");
 
         RaceWeatherDto raceWeatherDto = new()
         {
