@@ -11,7 +11,7 @@ export default function MiniMap({ lat, lng }: MiniMapProps) {
     const position: LatLngExpression = [lat, lng];
 
     return (
-        <div className="border border-red-600 rounded-xl overflow-hidden w-full" style={{ height: 300 }}>
+        <div className="border border-red-600 rounded-xl overflow-hidden w-full z-0" style={{ height: 300 }}>
             <MapContainer center={position} zoom={13} scrollWheelZoom={false} style={{ height: 300, width: "100%" }}>
                 <TileLayer
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'

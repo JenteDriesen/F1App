@@ -92,7 +92,7 @@ export default function NextWeekendInfoPage() {
 
             <div className="flex flex-col lg:flex-row gap-4 items-start">
                 {/* Left column */}
-                <div className="flex flex-col gap-4 lg:w-2/5">
+                <div className="flex flex-col gap-4 lg:w-2/5 shrink-0 min-w-[30rem]">
                     <MiniMap lat={lat} lng={lng} />
                     {nextSession && nextRace && nextSession.sessionDateTime !== nextRace.sessionDateTime && (
                         <CountDown name={nextSession.name} sessionDateTime={nextSession.sessionDateTime} />
@@ -103,7 +103,7 @@ export default function NextWeekendInfoPage() {
                 </div>
 
                 {/* Right column - weather */}
-                <div className="flex-1 rounded-xl p-4 bg-white dark:bg-zinc-800">
+                <div className="flex-1 rounded-xl p-4 bg-white dark:bg-zinc-800 min-w-[30rem]">
                     <p className="text-xs uppercase tracking-widest text-zinc-400 mb-4">Weekend weather</p>
                     {daily && (
                         <div className="flex gap-4 mb-6">

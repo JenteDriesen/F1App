@@ -6,7 +6,7 @@ interface CountDownProps {
 }
 
 function useCountdown(target: string | undefined) {
-    const [timeLeft, setTimeLeft] = useState<number>(0);
+    const [timeLeft, setTimeLeft] = useState<number | null>(null);
 
     useEffect(() => {
         if (!target) return;
@@ -19,7 +19,8 @@ function useCountdown(target: string | undefined) {
     return timeLeft;
 }
 
-function formatCountdown(ms: number) {
+function formatCountdown(ms: number | null) {
+    if (ms === null) return "Loading...";
     if (ms <= 0) return "Live now";
     const totalSeconds = Math.floor(ms / 1000);
     const days = Math.floor(totalSeconds / (60 * 60 * 24));

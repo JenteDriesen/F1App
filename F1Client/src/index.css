@@ -7,3 +7,9 @@ body {
   min-height: 100vh;
   @apply text-zinc-900 dark:text-zinc-100;
 }
+
+@layer base {
+  body {
+    @apply bg-white dark:bg-zinc-800;
+  }
+}
