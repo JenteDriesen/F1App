@@ -5,59 +5,85 @@ using System.Text.Json;
 using F1Data.DTOs;
 using F1Data.Interfaces;
 using F1Services.Interfaces;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace F1Services.Models;
 
 public class StandingsService : IStandingsService
 {
     private readonly IErgastApiClient _ergast;
+    public readonly IMemoryCache _cache;
 
-    public StandingsService(IErgastApiClient ergast)
+    public StandingsService(IErgastApiClient ergast, IMemoryCache cache)
     {
         _ergast = ergast;
+        _cache = cache;
     }
 
     public async Task<List<DriverStandingDto>> GetDriverStandingsAsync(int? year = null, int? race = null)
     {
-        int chosenYear = year ?? DateTime.Now.Year;
-        int thisYear = DateTime.Now.Year;
+        int chosenYear = NormalizeYear(year);
 
-        if (chosenYear > thisYear)
-            chosenYear = thisYear;
-        if (chosenYear < 1950)
-            chosenYear = 1950;
+        int chosenRound = await DetermineRoundAsync(chosenYear, race);
 
-        var season = await _ergast.GetJsonAsync($"https://api.jolpi.ca/ergast/f1/{chosenYear}/driverStandings.json");
+        string WDCCacheKey = $"driverStandings_{chosenYear}_{chosenRound}";
 
-        using var doc = JsonDocument.Parse(season);
-
-        var lastRace = doc.RootElement
-                          .GetProperty("MRData")
-                          .GetProperty("StandingsTable")
-                          .GetProperty("round")
-                          .GetString()!;
-
-        int lastRaceInt = lastRace != null
-                        ? int.Parse(lastRace)
-                        : 0;
-
-        //if race is out of bounds, default to last race
-        if (!race.HasValue || race <= 0 || race > lastRaceInt)
+        if (_cache.TryGetValue(WDCCacheKey, out List<DriverStandingDto> cached))
         {
-            race = lastRaceInt;
+            return cached ?? throw new InvalidOperationException($"Driver standings data was not generated or returned null for key '{WDCCacheKey}'.");
         }
 
-        var url = (year.HasValue && race.HasValue)
-            ? $"https://api.jolpi.ca/ergast/f1/{chosenYear}/{race}/driverStandings.json"
-            : year.HasValue
-            ? $"https://api.jolpi.ca/ergast/f1/{chosenYear}/driverStandings.json"
-            : race.HasValue
-            ? $"https://api.jolpi.ca/ergast/f1/current/{race}/driverStandings.json"
-            : "https://api.jolpi.ca/ergast/f1/current/driverStandings.json";
+        var url = $"https://api.jolpi.ca/ergast/f1/{chosenYear}/{chosenRound}/driverStandings.json";
 
         var json = await _ergast.GetJsonAsync(url);
 
-        return MapDriverStandings(json);
+        var result = MapDriverStandings(json);
+
+        _cache.Set(WDCCacheKey, result, TimeSpan.FromMinutes(10));
+
+        return result;
+    }
+
+    private static int NormalizeYear(int? year)
+    {
+        int thisYear = year ?? DateTime.Now.Year;
+        return Math.Clamp(thisYear, 1950, DateTime.Now.Year);
+    }
+
+    private async Task<int> DetermineRoundAsync(int year, int? race)
+    {
+
+        int latestRound = await GetLatestRoundAsync(year);
+
+        if (!race.HasValue || race <= 0 || race > latestRound)
+        {
+            return latestRound;
+        }
+
+        return race.Value;
+    }
+
+    private async Task<int> GetLatestRoundAsync(int year)
+    {
+        //trying with GetOrCreateAsync
+        string latestRoundCacheKey = $"latestRound_{year}";
+
+        return await _cache.GetOrCreateAsync(latestRoundCacheKey, async (entry) =>
+                    {
+                        entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);
+
+                        var season = await _ergast.GetJsonAsync(
+                                        $"https://api.jolpi.ca/ergast/f1/{year}/driverStandings.json");
+
+                        using var doc = JsonDocument.Parse(season);
+
+                        return int.Parse(
+                                    doc.RootElement
+                                       .GetProperty("MRData")
+                                       .GetProperty("StandingsTable")
+                                       .GetProperty("round")
+                                       .GetString()!);
+                    });
     }
 
     private List<DriverStandingDto> MapDriverStandings(string json)

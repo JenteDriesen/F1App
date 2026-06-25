@@ -22,6 +22,7 @@ builder.Services.AddScoped<IRaceRepository, RaceRepository>();
 builder.Services.AddScoped<IWeatherRepository, WeatherRepository>();
 builder.Services.AddScoped<IWeatherService, WeatherService>();
 
+builder.Services.AddMemoryCache();
 
 var app = builder.Build();
 
