@@ -128,12 +128,16 @@ public class RaceRepository : IRaceRepository
                            ? raceTime.GetProperty("time").GetString() ?? "unknown"
                            : string.Empty,
                 Points = decimal.Parse(result.GetProperty("points").GetString() ?? "0", CultureInfo.InvariantCulture),
-                FastestLapTime = result.TryGetProperty("FastestLap", out var fastestLap)
-                             ? fastestLap.GetProperty("Time").GetProperty("time").GetString() ?? "unknown"
-                             : string.Empty,
-                FastestLapRank = result.TryGetProperty("FastestLap", out var fastestLap2)
-                                ? int.Parse(fastestLap2.GetProperty("rank").GetString() ?? "0")
-                                : 0
+                FastestLapTime = result.TryGetProperty("FastestLap", out var fastestLap) &&
+                                 fastestLap.TryGetProperty("Time", out var timeObj) &&
+                                 timeObj.TryGetProperty("time", out var timeProp)
+                                 ? timeProp.GetString() ?? "unknown"
+                                 : string.Empty,
+                FastestLapRank = result.TryGetProperty("FastestLap", out var fastestLap2) &&
+                                 fastestLap2.TryGetProperty("rank", out var rankProp) &&
+                                 int.TryParse(rankProp.GetString(), out var rank)
+                                 ? rank
+                                 : 0
             });
         }
 

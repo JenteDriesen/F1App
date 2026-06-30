@@ -99,7 +99,7 @@ public partial class RaceService : IRaceService
 
     public async Task<List<RaceResultDto>> GetRaceResultsAsync(int? year = null, int? race = null, string? session = "race")
     {
-        string raceResultsCacheKey = $"raceResults_{year?.ToString() ?? "current"}_{race?.ToString() ?? "last"}";
+        string raceResultsCacheKey = $"raceResults_{year?.ToString() ?? "current"}_{race?.ToString() ?? "last"}_{session}";
 
         return await _cache.GetOrCreateAsync(raceResultsCacheKey, async (entry) =>
                 {
