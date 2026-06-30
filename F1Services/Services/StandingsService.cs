@@ -12,7 +12,7 @@ namespace F1Services.Models;
 public class StandingsService : IStandingsService
 {
     private readonly IErgastApiClient _ergast;
-    public readonly IMemoryCache _cache;
+    private readonly IMemoryCache _cache;
 
     public StandingsService(IErgastApiClient ergast, IMemoryCache cache)
     {
@@ -28,20 +28,15 @@ public class StandingsService : IStandingsService
 
         string WDCCacheKey = $"driverStandings_{chosenYear}_{chosenRound}";
 
-        if (_cache.TryGetValue(WDCCacheKey, out List<DriverStandingDto> cached))
-        {
-            return cached ?? throw new InvalidOperationException($"Driver standings data was not generated or returned null for key '{WDCCacheKey}'.");
-        }
+        return await _cache.GetOrCreateAsync(WDCCacheKey, async (entry) =>
+                {
+                    entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);
 
-        var url = $"https://api.jolpi.ca/ergast/f1/{chosenYear}/{chosenRound}/driverStandings.json";
+                    var url = $"https://api.jolpi.ca/ergast/f1/{chosenYear}/{chosenRound}/driverStandings.json";
 
-        var json = await _ergast.GetJsonAsync(url);
-
-        var result = MapDriverStandings(json);
-
-        _cache.Set(WDCCacheKey, result, TimeSpan.FromMinutes(10));
-
-        return result;
+                    var json = await _ergast.GetJsonAsync(url);
+                    return MapDriverStandings(json);
+                }) ?? throw new InvalidOperationException($"Driver standings data was not generated or returned null for key '{WDCCacheKey}'.");
     }
 
     private static int NormalizeYear(int? year)
@@ -65,7 +60,6 @@ public class StandingsService : IStandingsService
 
     private async Task<int> GetLatestRoundAsync(int year)
     {
-        //trying with GetOrCreateAsync
         string latestRoundCacheKey = $"latestRound_{year}";
 
         return await _cache.GetOrCreateAsync(latestRoundCacheKey, async (entry) =>
