@@ -10,5 +10,6 @@ public class RaceResult
     public string Status { get; set; }
     public string RaceTime { get; set; }
     public decimal Points { get; set; }
-    public string FastestLap { get; set; }
+    public string FastestLapTime { get; internal set; }
+    public int FastestLapRank { get; internal set; }
 }

@@ -89,7 +89,7 @@ public class RaceRepository : IRaceRepository
                             .GetProperty("RaceTable")
                             .GetProperty("Races")
                             .EnumerateArray()
-                            .First();
+                            .FirstOrDefault();
 
         var raceResultJson = raceWeekend
                                 .GetProperty($"{(session == "race" ? string.Empty : sessionUpperFirst)}Results")
@@ -128,9 +128,12 @@ public class RaceRepository : IRaceRepository
                            ? raceTime.GetProperty("time").GetString() ?? "unknown"
                            : string.Empty,
                 Points = decimal.Parse(result.GetProperty("points").GetString() ?? "0", CultureInfo.InvariantCulture),
-                FastestLap = result.TryGetProperty("FastestLap", out var fastestLap)
+                FastestLapTime = result.TryGetProperty("FastestLap", out var fastestLap)
                              ? fastestLap.GetProperty("Time").GetProperty("time").GetString() ?? "unknown"
                              : string.Empty,
+                FastestLapRank = result.TryGetProperty("FastestLap", out var fastestLap2)
+                                ? int.Parse(fastestLap2.GetProperty("rank").GetString() ?? "0")
+                                : 0
             });
         }
 
@@ -159,7 +162,7 @@ public class RaceRepository : IRaceRepository
                     .GetProperty("RaceTable")
                     .GetProperty("Races")
                     .EnumerateArray()
-                    .First();
+                    .FirstOrDefault();
 
         var qualiResultJson = raceWeekend.GetProperty($"{sessionUpperFirst}Results")
                                          .EnumerateArray();

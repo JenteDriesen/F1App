@@ -17,8 +17,6 @@ interface Props {
     year?: number;
 }
 
-const MEDAL: Record<number, string> = { 1: "🥇", 2: "🥈", 3: "🥉" };
-
 export default function DriverStandingsTable({ standings, year }: Props) {
     const currentYear = new Date().getFullYear();
 
@@ -43,8 +41,11 @@ export default function DriverStandingsTable({ standings, year }: Props) {
                 <tbody>
                     {standings.map(driver => (
                         <tr key={driver.driverId} className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
-                            <td className="py-2 pr-4 font-mono text-zinc-500 dark:text-zinc-400">
-                                {MEDAL[driver.position] ?? driver.position}
+                            <td className="py-2 pr-4 font-mono">
+                                {driver.position === 1 ? <span className="text-yellow-400 font-bold">1</span>
+                                    : driver.position === 2 ? <span className="text-zinc-400 font-bold">2</span>
+                                        : driver.position === 3 ? <span className="text-amber-600 font-bold">3</span>
+                                            : <span className="text-zinc-400">{driver.position}</span>}
                             </td>
                             <td className="py-2 pr-8 font-semibold text-zinc-900 dark:text-white">{driver.name}</td>
                             <td className="py-2 pr-8 text-zinc-500 dark:text-zinc-400">{driver.constructor}</td>
