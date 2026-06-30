@@ -127,9 +127,10 @@ public class RaceRepository : IRaceRepository
                 RaceTime = result.TryGetProperty("Time", out var raceTime)
                            ? raceTime.GetProperty("time").GetString() ?? "unknown"
                            : string.Empty,
+                Points = decimal.Parse(result.GetProperty("points").GetString() ?? "0", CultureInfo.InvariantCulture),
                 FastestLap = result.TryGetProperty("FastestLap", out var fastestLap)
                              ? fastestLap.GetProperty("Time").GetProperty("time").GetString() ?? "unknown"
-                             : string.Empty
+                             : string.Empty,
             });
         }
 

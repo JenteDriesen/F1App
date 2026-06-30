@@ -49,7 +49,7 @@ export default function ResultPage() {
     useEffect(() => {
         if (selectedRound === null || selectedSession === null) return;
 
-        fetch(`/api/race/${year}/${selectedRound}/${selectedSession}`)
+        fetch(`/api/race/${year}/${selectedRound}/results/${selectedSession}`)
             .then(res => res.json())
             .then((data: ResultEntry[]) => {
                 setResults(data);

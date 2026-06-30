@@ -9,5 +9,6 @@ public class RaceResult
     public Constructor Constructor { get; set; }
     public string Status { get; set; }
     public string RaceTime { get; set; }
+    public decimal Points { get; set; }
     public string FastestLap { get; set; }
 }
