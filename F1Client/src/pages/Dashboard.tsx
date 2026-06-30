@@ -3,21 +3,6 @@ import { Link } from "react-router-dom";
 import DriverStandingsTable, { type DriverStandingDto } from "../components/DriversStandingsTable";
 import CountDownSessionRace, { type Session } from '../components/CountdownSessionRace';
 
-interface SessionRaceData {
-    nextSession: Session;
-    nextRace: Session;
-}
-
-const fetchWithRetry = <T,>(url: string, retries = 3, delay = 500): Promise<T> =>
-    fetch(url).then(res => {
-        if (!res.ok) throw new Error(res.statusText);
-        return res.json() as Promise<T>;
-    }).catch(err => {
-        if (retries === 0) throw err;
-        return new Promise<T>(resolve => setTimeout(resolve, delay))
-            .then(() => fetchWithRetry<T>(url, retries - 1, delay));
-    });
-
 export default function Dashboard() {
     const [standings, setStandings] = useState<DriverStandingDto[]>([]);
     const [loading, setLoading] = useState(true);
@@ -26,14 +11,14 @@ export default function Dashboard() {
 
     useEffect(() => {
         Promise.all([
-            fetchWithRetry<DriverStandingDto[]>("/api/standings"),
-            fetchWithRetry<SessionRaceData>("/api/race/nextSessionRace"),
+            fetch("/api/standings").then(res => res.json()),
+            fetch("/api/race/nextSessionRace").then(res => res.json()),
         ]).then(([standingsData, sessionData]) => {
             setStandings(standingsData);
             setNextSession(sessionData.nextSession);
             setNextRace(sessionData.nextRace);
             setLoading(false);
-        }).catch(() => setLoading(false));
+        });
     }, []);
 
     if (loading) return <div className="text-zinc-500 dark:text-zinc-400">Loading dashboard...</div>;
