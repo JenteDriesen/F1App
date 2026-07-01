@@ -40,7 +40,7 @@ export default function CountDown({ name, sessionDateTime }: CountDownProps) {
                 {isRace ? "Race" : "Next session"}
             </p>
             <h4 className="text-base font-semibold text-zinc-900 dark:text-white mb-2">{name}</h4>
-            <p className="text-2xl font-bold text-red-600 mb-1">{formatCountdown(timeLeft)}</p>
+            <p className="text-2xl font-bold text-red-600 tabular-nums mb-1">{formatCountdown(timeLeft)}</p>
             <p className="text-xs text-zinc-400">{new Date(sessionDateTime).toLocaleString()}</p>
         </div>
     );

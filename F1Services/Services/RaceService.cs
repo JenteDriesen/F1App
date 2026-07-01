@@ -75,7 +75,7 @@ public partial class RaceService : IRaceService
         };
     }
 
-    public async Task<RaceWeekendQualifyingResult> GetQualifyingResultsAsync(int? year = null, int? race = null, string? session = "Qualifying")
+    public async Task<List<QualifyingResultDto>> GetQualifyingResultsAsync(int? year = null, int? race = null, string? session = "Qualifying")
     {
         string qualifyingResultsCacheKey = $"qualifyingResults_{year?.ToString() ?? "current"}_{race?.ToString() ?? "last"}";
 
@@ -83,19 +83,46 @@ public partial class RaceService : IRaceService
                 {
                     entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(15);
 
-                    return await _raceRepository.GetQualifyingResultsAsync(year, race, session);
+                    var weekendResult = await _raceRepository.GetQualifyingResultsAsync(year, race, session);
+
+                    return weekendResult.Results.Select(r => new QualifyingResultDto
+                    {
+                        Position = r.Position,
+                        Driver = $"{r.Driver.GivenName} {r.Driver.FamilyName}",
+                        Team = r.Constructor.Name,
+                        Q1 = r.Q1,
+                        Q2 = r.Q2,
+                        Q3 = r.Q3
+                    }).ToList();
                 }) ?? throw new InvalidOperationException($"Qualifying results were not generated or returned null for key '{qualifyingResultsCacheKey}'.");
     }
 
-    public async Task<RaceWeekendRaceResult> GetRaceResultsAsync(int? year = null, int? race = null, string? session = "race")
+    public async Task<List<RaceResultDto>> GetRaceResultsAsync(int? year = null, int? race = null, string? session = "race")
     {
-        string raceResultsCacheKey = $"raceResults_{year?.ToString() ?? "current"}_{race?.ToString() ?? "last"}";
+        string raceResultsCacheKey = $"raceResults_{year?.ToString() ?? "current"}_{race?.ToString() ?? "last"}_{session}";
 
         return await _cache.GetOrCreateAsync(raceResultsCacheKey, async (entry) =>
                 {
                     entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(15);
 
-                    return await _raceRepository.GetRaceResultsAsync(year, race, session);
+                    var weekendResult = await _raceRepository.GetRaceResultsAsync(year, race, session);
+
+                    return weekendResult.Results.Select(r => new RaceResultDto
+                    {
+                        Position = r.Position,
+                        Driver = $"{r.Driver.GivenName} {r.Driver.FamilyName}",
+                        Team = r.Constructor.Name,
+                        Status = r.Status.StartsWith("Finished")
+                                    || r.Status.Contains("lap", StringComparison.OrdinalIgnoreCase) ? r.Status
+                                : r.Status.StartsWith("Did not qualify") ? "DNQ"
+                                : r.Status.StartsWith("Did not prequalify") ? "DNPQ"
+                                : r.Status.StartsWith("Did not start") ? "DNS"
+                                : r.Status.StartsWith("Disqualified") ? "DSQ"
+                                : "DNF",
+                        Time = r.RaceTime,
+                        Points = r.Points,
+                        FastestLap = r.FastestLapRank == 1
+                    }).ToList();
                 }) ?? throw new InvalidOperationException($"Race results were not generated or returned null for key '{raceResultsCacheKey}'.");
     }
 

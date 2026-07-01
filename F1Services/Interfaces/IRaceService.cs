@@ -8,7 +8,7 @@ public interface IRaceService
 {
     Task<NextSessionAndRaceDto> GetNextSessionAndRaceAsync();
     Task<RaceWeekend> GetNextRaceweekendAsync();
-    Task<RaceWeekendQualifyingResult> GetQualifyingResultsAsync(int? year, int? race, string? session);
-    Task<RaceWeekendRaceResult> GetRaceResultsAsync(int? year, int? race, string? session);
+    Task<List<QualifyingResultDto>> GetQualifyingResultsAsync(int? year, int? race, string? session);
+    Task<List<RaceResultDto>> GetRaceResultsAsync(int? year, int? race, string? session);
     Task<List<RaceWeekendDto>> GetCompletedRaceWeekendsAsync(int? year);
 }

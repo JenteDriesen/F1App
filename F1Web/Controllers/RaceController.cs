@@ -68,11 +68,13 @@ namespace F1Web.Controllers
         [HttpGet("{year}/{race}/results/{session}")]
         public async Task<IActionResult> GetRaceResults(int year, int race, string? session = "race")
         {
+            session = session.ToLowerInvariant();
+
             if (session == "race" || session == "sprint")
             {
                 return Ok(await _raceService.GetRaceResultsAsync(year, race, session));
             }
-            if (session.ToLower().Contains("qualifying"))
+            if (session.Contains("qualifying"))
             {
                 return Ok(await _raceService.GetQualifyingResultsAsync(year, race, session));
             }

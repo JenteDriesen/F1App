@@ -2,11 +2,11 @@ import { useState, useEffect } from "react";
 import DriverStandingsTable, { type DriverStandingDto } from "../components/DriversStandingsTable";
 
 export default function DriversStandingsPage() {
-    const [year, setYear] = useState<number | null>(null);
+    const currentYear = new Date().getFullYear();
+    const [year, setYear] = useState<number>(currentYear);
     const [race, setRace] = useState<number | null>(null);
     const [standings, setStandings] = useState<DriverStandingDto[]>([]);
     const [loading, setLoading] = useState(true);
-    const currentYear = new Date().getFullYear();
 
     useEffect(() => {
         fetch("/api/standings")
@@ -39,7 +39,7 @@ export default function DriversStandingsPage() {
             .finally(() => setLoading(false));
     };
 
-    if (loading) return <div className="text-zinc-500 dark:text-zinc-400 p-8">Loading...</div>;
+    if (loading) return <div className="text-zinc-500 dark:text-zinc-400 p-8"></div>;
 
     return (
         <div className="py-6 min-h-screen">
@@ -48,11 +48,15 @@ export default function DriversStandingsPage() {
                     <label className="text-xs uppercase tracking-widest text-zinc-400">Year</label>
                     <input
                         type="number"
-                        value={year ?? ""}
+                        value={year}
                         min={1950}
                         max={currentYear}
-                        placeholder={String(currentYear)}
-                        onChange={e => setYear(Number(e.target.value))}
+                        onChange={e => setYear(Number(e.target.value) || currentYear)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                handleApply();
+                            }
+                        }}
                         className="w-full bg-white dark:bg-zinc-700 border border-zinc-300 dark:border-zinc-700 rounded-lg px-3 py-1.5 text-sm text-zinc-900 dark:text-white focus:outline-none focus:border-red-500"
                     />
                 </div>
@@ -64,6 +68,11 @@ export default function DriversStandingsPage() {
                         value={race ?? ""}
                         min={0}
                         placeholder="Last"
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                handleApply();
+                            }
+                        }}
                         onChange={e => {
                             const val = e.target.value;
                             setRace(val === "0" ? null : Number(val));
