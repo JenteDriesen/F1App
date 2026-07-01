@@ -112,10 +112,12 @@ public partial class RaceService : IRaceService
                         Position = r.Position,
                         Driver = $"{r.Driver.GivenName} {r.Driver.FamilyName}",
                         Team = r.Constructor.Name,
-                        Status = r.Status == "Finished" ? "Finished"
-                                : r.Status.ToLower().Contains("lap") ? r.Status
-                                : r.Status == "Did not start" ? "DNS"
-                                : r.Status == "Disqualified" ? "DSQ"
+                        Status = r.Status.StartsWith("Finished")
+                                    || r.Status.Contains("lap", StringComparison.OrdinalIgnoreCase) ? r.Status
+                                : r.Status.StartsWith("Did not qualify") ? "DNQ"
+                                : r.Status.StartsWith("Did not prequalify") ? "DNPQ"
+                                : r.Status.StartsWith("Did not start") ? "DNS"
+                                : r.Status.StartsWith("Disqualified") ? "DSQ"
                                 : "DNF",
                         Time = r.RaceTime,
                         Points = r.Points,

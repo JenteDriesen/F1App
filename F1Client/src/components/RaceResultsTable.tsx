@@ -21,13 +21,23 @@ export default function RaceResultsTable({ year, round, session }: Props) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        let cancelled = false;
+
         fetch(`/api/race/${year}/${round}/results/${session}`)
             .then(res => res.json())
-            .then((data) => {
-                setResults(data);
-                setLoading(false);
+            .then(data => {
+                if (!cancelled) {
+                    setResults(data);
+                    setLoading(false);
+                }
             })
-            .catch(() => setLoading(false));
+            .catch(() => {
+                if (!cancelled) setLoading(false);
+            });
+
+        return () => {
+            cancelled = true;
+        };
     }, [year, round, session]);
 
     if (loading) return <div className="text-zinc-400 animate-pulse">Fetching results...</div>;

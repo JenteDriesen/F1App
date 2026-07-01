@@ -22,9 +22,15 @@ export default function ResultPage() {
     const pendingRoundRef = useRef<number | null>(null);
 
     useEffect(() => {
+        let cancelled = false;
+
         fetch(`/api/race/${year}`)
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) throw new Error();
+                return res.json();
+            })
             .then((data: Weekend[]) => {
+                if (cancelled) return;
                 setWeekends(data);
                 if (pendingRoundRef.current !== null) {
                     const weekend = data.find(w => w.round === pendingRoundRef.current);
@@ -34,12 +40,18 @@ export default function ResultPage() {
                 } else if (data.length > 0) {
                     const latest = data[data.length - 1];
                     setSelectedRound(latest.round);
-                    setSelectedSession(latest.sessions[latest.sessions.length - 1]);
+                    setSelectedSession(latest.sessions.at(-1) ?? null);
                 }
                 setLoading(false);
+            })
+            .catch(() => {
+                if (!cancelled) setLoading(false);
             });
 
-        return () => setLoading(true);
+        return () => {
+            cancelled = true;
+            setLoading(true);
+        };
     }, [year]);
 
     const handleApply = () => {
@@ -78,6 +90,11 @@ export default function ResultPage() {
                         min={1950}
                         max={currentYear}
                         onChange={e => setYearInput(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                handleApply();
+                            }
+                        }}
                         className={inputClass}
                     />
                 </div>
@@ -90,6 +107,11 @@ export default function ResultPage() {
                         min={1}
                         placeholder="Last"
                         onChange={e => setRoundInput(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                handleApply();
+                            }
+                        }}
                         className={inputClass}
                     />
                 </div>
@@ -144,10 +166,9 @@ export default function ResultPage() {
                     </div>
                 ) : isQualifying ? (
                     <QualifyingResultsTable
-                        key={`${year}-${selectedRound}-${selectedSession}`} year={year} round={selectedRound!} session={selectedSession} />
+                        year={year} round={selectedRound!} session={selectedSession} />
                 ) : isRace ? (
                     <RaceResultsTable
-                        key={`${year}-${selectedRound}-${selectedSession}`}
                         year={year} round={selectedRound!} session={selectedSession}
                     />
                 ) : (

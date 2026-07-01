@@ -16,71 +16,98 @@ public class RaceRepository : IRaceRepository
     }
 
     public async Task<List<RaceWeekend>> GetRaceWeekendsAsync(int? year = null)
+{
+    var calendar = await _ergast.GetJsonAsync($"https://api.jolpi.ca/ergast/f1/{(year == null ? "current" : year)}.json");
+
+    using var doc = JsonDocument.Parse(calendar);
+
+    var races = doc.RootElement
+        .GetProperty("MRData")
+        .GetProperty("RaceTable")
+        .GetProperty("Races")
+        .EnumerateArray();
+
+    List<RaceWeekend> weekends = [];
+
+    foreach (var race in races)
     {
-        var calendar = await _ergast.GetJsonAsync($"https://api.jolpi.ca/ergast/f1/{(year == null ? "current" : year)}.json");
+        if (!race.TryGetProperty("round", out var round))
+            continue;
 
-        using var doc = JsonDocument.Parse(calendar);
+        race.TryGetProperty("Circuit", out var circuit);
+        circuit.TryGetProperty("Location", out var location);
 
-        var races = doc.RootElement
-            .GetProperty("MRData")
-            .GetProperty("RaceTable")
-            .GetProperty("Races")
-            .EnumerateArray();
+        var orderedSessions = race.EnumerateObject()
+            .Where(p =>
+                p.Name.EndsWith("Practice", StringComparison.OrdinalIgnoreCase) ||
+                p.Name.Equals("Qualifying", StringComparison.OrdinalIgnoreCase) ||
+                p.Name.Contains("Sprint", StringComparison.OrdinalIgnoreCase))
+            .Select(p =>
+            {
+                var date = p.Value.TryGetProperty("date", out var d) ? d.GetString() : null;
+                var time = p.Value.TryGetProperty("time", out var t) ? t.GetString() : "00:00:00Z";
 
-        var now = DateTime.UtcNow;
-        List<RaceWeekend> weekends = [];
+                return new Session
+                {
+                    Name = p.Name,
+                    SessionDateTime = date != null
+                        ? DateTimeOffset.Parse($"{date}T{time}").UtcDateTime
+                        : DateTime.MinValue
+                };
+            })
+            .OrderBy(s => s.SessionDateTime)
+            .ToList();
 
-        foreach (var race in races)
+        var raceDate = race.TryGetProperty("date", out var rd) ? rd.GetString() : null;
+        var raceTime = race.TryGetProperty("time", out var rt) ? rt.GetString() : "00:00:00Z";
+
+        weekends.Add(new RaceWeekend
         {
-            var circuit = race.GetProperty("Circuit");
-            var location = circuit.GetProperty("Location");
+            Season = race.TryGetProperty("season", out var season) &&
+                     int.TryParse(season.GetString(), out var parsedSeason)
+                ? parsedSeason : 0,
 
-            var orderedSessions = race.EnumerateObject()
-                .Where(p =>
-                    p.Name.EndsWith("Practice", StringComparison.OrdinalIgnoreCase) ||
-                    p.Name.Equals("Qualifying", StringComparison.OrdinalIgnoreCase) ||
-                    p.Name.Contains("Sprint", StringComparison.OrdinalIgnoreCase)
-                    )
-                .Select(p =>
+            Round = int.TryParse(round.GetString(), out var parsedRound) ? parsedRound : 0,
+
+            Name = race.TryGetProperty("raceName", out var raceName)
+                ? raceName.GetString() ?? "unknown" : "unknown",
+
+            Circuit = new Circuit
+            {
+                Id = circuit.TryGetProperty("circuitId", out var circuitId)
+                    ? circuitId.GetString() ?? "unknown" : "unknown",
+
+                Name = circuit.TryGetProperty("circuitName", out var circuitName)
+                    ? circuitName.GetString() ?? "unknown" : "unknown",
+
+                Location = new Location
                 {
-                    var date = p.Value.TryGetProperty("date", out var d) ? d.GetString() : null;
-                    var time = p.Value.TryGetProperty("time", out var t) ? t.GetString() : "00:00:00Z";
+                    Latitude = location.TryGetProperty("lat", out var lat) &&
+                               decimal.TryParse(lat.GetString(), CultureInfo.InvariantCulture, out var parsedLat)
+                        ? parsedLat : 0m,
 
-                    return new Session
-                    {
-                        Name = p.Name,
-                        SessionDateTime = DateTimeOffset.Parse($"{date}T{time}").UtcDateTime
-                    };
-                })
-                .OrderBy(s => s.SessionDateTime)
-                .ToList();
+                    Longitude = location.TryGetProperty("long", out var lng) &&
+                                decimal.TryParse(lng.GetString(), CultureInfo.InvariantCulture, out var parsedLng)
+                        ? parsedLng : 0m,
 
+                    Locality = location.TryGetProperty("locality", out var locality)
+                        ? locality.GetString() ?? "unknown" : "unknown",
 
-            if (race.TryGetProperty("round", out var round))
-                weekends.Add(new RaceWeekend
-                {
-                    Season = int.TryParse(race.GetProperty("season").GetString(), out var season) ? season : 0,
-                    Round = int.Parse(round.ToString()),
-                    Name = race.GetProperty("raceName").GetString() ?? "unknown",
-                    Circuit = new Circuit
-                    {
-                        Id = circuit.GetProperty("circuitId").GetString() ?? "unknown",
-                        Name = circuit.GetProperty("circuitName").GetString() ?? "unknown",
-                        Location = new Location
-                        {
-                            Latitude = decimal.TryParse(location.GetProperty("lat").GetString(), CultureInfo.InvariantCulture, out var lat) ? lat : 0m,
-                            Longitude = decimal.TryParse(location.GetProperty("long").GetString(), CultureInfo.InvariantCulture, out var lng) ? lng : 0m,
-                            Locality = location.GetProperty("locality").GetString() ?? "unknown",
-                            Country = location.GetProperty("country").GetString() ?? "unknown"
-                        }
-                    },
-                    RaceDateTime = DateTimeOffset.Parse($"{race.GetProperty("date").GetString()}T{race.GetProperty("time").GetString()}").UtcDateTime,
-                    Sessions = orderedSessions
-                });
-        }
+                    Country = location.TryGetProperty("country", out var country)
+                        ? country.GetString() ?? "unknown" : "unknown"
+                }
+            },
 
-        return weekends;
+            RaceDateTime = raceDate != null
+                ? DateTimeOffset.Parse($"{raceDate}T{raceTime}").UtcDateTime
+                : DateTime.MinValue,
+
+            Sessions = orderedSessions
+        });
     }
+
+    return weekends;
+}
 
     public async Task<RaceWeekendRaceResult> GetRaceResultsAsync(int? year = null, int? race = null, string? session = "race")
     {
