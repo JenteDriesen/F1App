@@ -41,10 +41,16 @@ public class RaceRepository : IRaceRepository
                     p.Name.Equals("Qualifying", StringComparison.OrdinalIgnoreCase) ||
                     p.Name.Contains("Sprint", StringComparison.OrdinalIgnoreCase)
                     )
-                .Select(p => new Session
+                .Select(p =>
                 {
-                    Name = p.Name,
-                    SessionDateTime = DateTimeOffset.Parse($"{p.Value.GetProperty("date").GetString()}T{p.Value.GetProperty("time").GetString()}").UtcDateTime
+                    var date = p.Value.TryGetProperty("date", out var d) ? d.GetString() : null;
+                    var time = p.Value.TryGetProperty("time", out var t) ? t.GetString() : "00:00:00Z";
+
+                    return new Session
+                    {
+                        Name = p.Name,
+                        SessionDateTime = DateTimeOffset.Parse($"{date}T{time}").UtcDateTime
+                    };
                 })
                 .OrderBy(s => s.SessionDateTime)
                 .ToList();
@@ -78,166 +84,249 @@ public class RaceRepository : IRaceRepository
 
     public async Task<RaceWeekendRaceResult> GetRaceResultsAsync(int? year = null, int? race = null, string? session = "race")
     {
-        var sessionUpperFirst = session.First().ToString().ToUpper() + session[1..];
+        session ??= "race";
+        var sessionUpperFirst = char.ToUpper(session[0]) + session[1..];
 
-        var results = await _ergast.GetJsonAsync($"https://api.jolpi.ca/ergast/f1/{year.ToString() ?? "current"}/{race.ToString() ?? "last"}/{(session == "race" ? "results" : session)}.json");
+        var url = $"https://api.jolpi.ca/ergast/f1/{year?.ToString() ?? "current"}/{race?.ToString() ?? "last"}/{(session == "race" ? "results" : session)}.json";
+        var results = await _ergast.GetJsonAsync(url);
 
         using var doc = JsonDocument.Parse(results);
 
         var raceWeekend = doc.RootElement
-                            .GetProperty("MRData")
-                            .GetProperty("RaceTable")
-                            .GetProperty("Races")
-                            .EnumerateArray()
-                            .FirstOrDefault();
+            .GetProperty("MRData")
+            .GetProperty("RaceTable")
+            .GetProperty("Races")
+            .EnumerateArray()
+            .FirstOrDefault();
 
-        var raceResultJson = raceWeekend
-                                .GetProperty($"{(session == "race" ? string.Empty : sessionUpperFirst)}Results")
-                                .EnumerateArray();
+        if (raceWeekend.ValueKind == JsonValueKind.Undefined)
+            return new RaceWeekendRaceResult { Season = 0, Round = 0, Name = "unknown", Results = [] };
+
+        var resultsKey = session == "race" ? "Results" : $"{sessionUpperFirst}Results";
+
+        if (!raceWeekend.TryGetProperty(resultsKey, out var resultsElement))
+            return new RaceWeekendRaceResult { Season = 0, Round = 0, Name = "unknown", Results = [] };
 
         var raceResults = new List<RaceResult>();
 
-        foreach (var result in raceResultJson)
+        foreach (var result in resultsElement.EnumerateArray())
         {
-            var driver = result.GetProperty("Driver");
-            var constructor = result.GetProperty("Constructor");
+            result.TryGetProperty("Driver", out var driver);
+            result.TryGetProperty("Constructor", out var constructor);
 
             raceResults.Add(new RaceResult
             {
-                Position = int.Parse(result.GetProperty("position").GetString() ?? "0"),
+                Position = result.TryGetProperty("position", out var pos)
+                    ? int.Parse(pos.GetString() ?? "0")
+                    : 0,
+
                 Driver = new Driver
                 {
-                    DriverId = driver.GetProperty("driverId").GetString() ?? "unknown",
-                    RaceNumber = int.Parse(driver.GetProperty("permanentNumber").GetString() ?? result.GetProperty("number").GetString() ?? "0"),
-                    Code = driver.GetProperty("code").GetString() ?? "unknown",
-                    GivenName = driver.GetProperty("givenName").GetString() ?? "unknown",
-                    FamilyName = driver.GetProperty("familyName").GetString() ?? "unknown",
-                    DateOfBirth = DateOnly.Parse(driver.GetProperty("dateOfBirth").GetString()),
-                    Nationality = driver.GetProperty("nationality").GetString() ?? "unknown",
-                    Wikipedia = driver.GetProperty("url").GetString() ?? "unknown",
+                    DriverId = driver.TryGetProperty("driverId", out var driverId)
+                        ? driverId.GetString() ?? "unknown" : "unknown",
+
+                    RaceNumber = driver.TryGetProperty("permanentNumber", out var permNum)
+                        ? int.Parse(permNum.GetString() ?? "0")
+                        : result.TryGetProperty("number", out var num)
+                            ? int.Parse(num.GetString() ?? "0")
+                            : 0,
+
+                    Code = driver.TryGetProperty("code", out var code)
+                        ? code.GetString() ?? "unknown" : "unknown",
+
+                    GivenName = driver.TryGetProperty("givenName", out var givenName)
+                        ? givenName.GetString() ?? "unknown" : "unknown",
+
+                    FamilyName = driver.TryGetProperty("familyName", out var familyName)
+                        ? familyName.GetString() ?? "unknown" : "unknown",
+
+                    DateOfBirth = driver.TryGetProperty("dateOfBirth", out var dob) && DateOnly.TryParse(dob.GetString(), out var parsedDob)
+                        ? parsedDob : DateOnly.MinValue,
+
+                    Nationality = driver.TryGetProperty("nationality", out var driverNat)
+                        ? driverNat.GetString() ?? "unknown" : "unknown",
+
+                    Wikipedia = driver.TryGetProperty("url", out var driverUrl)
+                        ? driverUrl.GetString() ?? "unknown" : "unknown",
                 },
+
                 Constructor = new Constructor
                 {
-                    ConstructorId = constructor.GetProperty("constructorId").GetString() ?? "unknown",
-                    Name = constructor.GetProperty("name").GetString() ?? "unknown",
-                    Nationality = constructor.GetProperty("nationality").GetString() ?? "unknown",
-                    Wikipedia = constructor.GetProperty("url").GetString() ?? "unknown",
+                    ConstructorId = constructor.TryGetProperty("constructorId", out var constructorId)
+                        ? constructorId.GetString() ?? "unknown" : "unknown",
+
+                    Name = constructor.TryGetProperty("name", out var constructorName)
+                        ? constructorName.GetString() ?? "unknown" : "unknown",
+
+                    Nationality = constructor.TryGetProperty("nationality", out var constructorNat)
+                        ? constructorNat.GetString() ?? "unknown" : "unknown",
+
+                    Wikipedia = constructor.TryGetProperty("url", out var constructorUrl)
+                        ? constructorUrl.GetString() ?? "unknown" : "unknown",
                 },
-                Status = result.GetProperty("status").GetString() ?? "unknown",
-                RaceTime = result.TryGetProperty("Time", out var raceTime)
-                           ? raceTime.GetProperty("time").GetString() ?? "unknown"
-                           : string.Empty,
-                Points = decimal.Parse(result.GetProperty("points").GetString() ?? "0", CultureInfo.InvariantCulture),
+
+                Status = result.TryGetProperty("status", out var status)
+                    ? status.GetString() ?? "unknown" : "unknown",
+
+                RaceTime = result.TryGetProperty("Time", out var raceTime) &&
+                           raceTime.TryGetProperty("time", out var raceTimeProp)
+                    ? raceTimeProp.GetString() ?? string.Empty : string.Empty,
+
+                Points = result.TryGetProperty("points", out var points) &&
+                         decimal.TryParse(points.GetString(), NumberStyles.Any, CultureInfo.InvariantCulture, out var parsedPoints)
+                    ? parsedPoints : 0,
+
                 FastestLapTime = result.TryGetProperty("FastestLap", out var fastestLap) &&
-                                 fastestLap.TryGetProperty("Time", out var timeObj) &&
-                                 timeObj.TryGetProperty("time", out var timeProp)
-                                 ? timeProp.GetString() ?? "unknown"
-                                 : string.Empty,
+                                 fastestLap.TryGetProperty("Time", out var lapTime) &&
+                                 lapTime.TryGetProperty("time", out var lapTimeProp)
+                    ? lapTimeProp.GetString() ?? string.Empty : string.Empty,
+
                 FastestLapRank = result.TryGetProperty("FastestLap", out var fastestLap2) &&
                                  fastestLap2.TryGetProperty("rank", out var rankProp) &&
                                  int.TryParse(rankProp.GetString(), out var rank)
-                                 ? rank
-                                 : 0
+                    ? rank : 0
             });
         }
 
-        RaceWeekendRaceResult weekendRaceResult = new()
+        return new RaceWeekendRaceResult
         {
-            Season = int.Parse(raceWeekend.GetProperty("season").GetString()),
-            Round = int.Parse(raceWeekend.GetProperty("round").GetString()),
-            Name = raceWeekend.GetProperty("raceName").GetString() ?? "unknown",
+            Season = raceWeekend.TryGetProperty("season", out var seasonProp) &&
+                     int.TryParse(seasonProp.GetString(), out var parsedSeason)
+                ? parsedSeason : 0,
+
+            Round = raceWeekend.TryGetProperty("round", out var roundProp) &&
+                    int.TryParse(roundProp.GetString(), out var parsedRound)
+                ? parsedRound : 0,
+
+            Name = raceWeekend.TryGetProperty("raceName", out var raceName)
+                ? raceName.GetString() ?? "unknown" : "unknown",
+
             Results = raceResults
         };
-
-        return weekendRaceResult;
     }
+
 
     public async Task<RaceWeekendQualifyingResult> GetQualifyingResultsAsync(int? year = null, int? race = null, string? session = "Qualifying")
     {
-        //right now eregast only does normal qualifying, not sprint qualifying, but i want to be flexible for the future
-        var sessionUpperFirst = session.First().ToString().ToUpper() + session[1..];
+        session ??= "Qualifying";
+        var sessionUpperFirst = char.ToUpper(session[0]) + session[1..];
 
-        var results = await _ergast.GetJsonAsync($"https://api.jolpi.ca/ergast/f1/{year.ToString() ?? "current"}/{race.ToString() ?? "last"}/{session}.json");
+        var results = await _ergast.GetJsonAsync($"https://api.jolpi.ca/ergast/f1/{year?.ToString() ?? "current"}/{race?.ToString() ?? "last"}/{session}.json");
 
         using var doc = JsonDocument.Parse(results);
 
         var raceWeekend = doc.RootElement
-                    .GetProperty("MRData")
-                    .GetProperty("RaceTable")
-                    .GetProperty("Races")
-                    .EnumerateArray()
-                    .FirstOrDefault();
+            .GetProperty("MRData")
+            .GetProperty("RaceTable")
+            .GetProperty("Races")
+            .EnumerateArray()
+            .FirstOrDefault();
 
-        var qualiResultJson = raceWeekend.GetProperty($"{sessionUpperFirst}Results")
-                                         .EnumerateArray();
+        if (raceWeekend.ValueKind == JsonValueKind.Undefined)
+            return new RaceWeekendQualifyingResult { Season = 0, Round = 0, Name = "unknown", Results = [] };
+
+        if (!raceWeekend.TryGetProperty($"{sessionUpperFirst}Results", out var resultsElement))
+            return new RaceWeekendQualifyingResult { Season = 0, Round = 0, Name = "unknown", Results = [] };
 
         var qualiResult = new List<QualifyingResult>();
 
-        foreach (var result in qualiResultJson)
+        foreach (var result in resultsElement.EnumerateArray())
         {
-            var driver = result.GetProperty("Driver");
-            var constructor = result.GetProperty("Constructor");
+            result.TryGetProperty("Driver", out var driver);
+            result.TryGetProperty("Constructor", out var constructor);
 
             qualiResult.Add(new QualifyingResult
             {
-                Position = int.Parse(result.GetProperty("position").GetString() ?? "0"),
+                Position = result.TryGetProperty("position", out var pos)
+                    ? int.Parse(pos.GetString() ?? "0")
+                    : 0,
+
                 Driver = new Driver
                 {
-                    DriverId = driver.GetProperty("driverId").GetString() ?? "unknown",
-                    RaceNumber = int.Parse(driver.GetProperty("permanentNumber").GetString() ?? result.GetProperty("number").GetString() ?? "0"),
-                    Code = driver.GetProperty("code").GetString() ?? "unknown",
-                    GivenName = driver.GetProperty("givenName").GetString() ?? "unknown",
-                    FamilyName = driver.GetProperty("familyName").GetString() ?? "unknown",
-                    DateOfBirth = DateOnly.Parse(driver.GetProperty("dateOfBirth").GetString()),
-                    Nationality = driver.GetProperty("nationality").GetString() ?? "unknown",
-                    Wikipedia = driver.GetProperty("url").GetString() ?? "unknown",
+                    DriverId = driver.TryGetProperty("driverId", out var driverId)
+                        ? driverId.GetString() ?? "unknown" : "unknown",
+
+                    RaceNumber = driver.TryGetProperty("permanentNumber", out var permNum)
+                        ? int.Parse(permNum.GetString() ?? "0")
+                        : result.TryGetProperty("number", out var num)
+                            ? int.Parse(num.GetString() ?? "0")
+                            : 0,
+
+                    Code = driver.TryGetProperty("code", out var code)
+                        ? code.GetString() ?? "unknown" : "unknown",
+
+                    GivenName = driver.TryGetProperty("givenName", out var givenName)
+                        ? givenName.GetString() ?? "unknown" : "unknown",
+
+                    FamilyName = driver.TryGetProperty("familyName", out var familyName)
+                        ? familyName.GetString() ?? "unknown" : "unknown",
+
+                    DateOfBirth = driver.TryGetProperty("dateOfBirth", out var dob) && DateOnly.TryParse(dob.GetString(), out var parsedDob)
+                        ? parsedDob : DateOnly.MinValue,
+
+                    Nationality = driver.TryGetProperty("nationality", out var driverNat)
+                        ? driverNat.GetString() ?? "unknown" : "unknown",
+
+                    Wikipedia = driver.TryGetProperty("url", out var driverUrl)
+                        ? driverUrl.GetString() ?? "unknown" : "unknown",
                 },
+
                 Constructor = new Constructor
                 {
-                    ConstructorId = constructor.GetProperty("constructorId").GetString() ?? "unknown",
-                    Name = constructor.GetProperty("name").GetString() ?? "unknown",
-                    Nationality = constructor.GetProperty("nationality").GetString() ?? "unknown",
-                    Wikipedia = constructor.GetProperty("url").GetString() ?? "unknown",
+                    ConstructorId = constructor.TryGetProperty("constructorId", out var constructorId)
+                        ? constructorId.GetString() ?? "unknown" : "unknown",
+
+                    Name = constructor.TryGetProperty("name", out var constructorName)
+                        ? constructorName.GetString() ?? "unknown" : "unknown",
+
+                    Nationality = constructor.TryGetProperty("nationality", out var constructorNat)
+                        ? constructorNat.GetString() ?? "unknown" : "unknown",
+
+                    Wikipedia = constructor.TryGetProperty("url", out var constructorUrl)
+                        ? constructorUrl.GetString() ?? "unknown" : "unknown",
                 },
-                Q1 = result.TryGetProperty("Q1", out var q1)
-                           ? q1.GetString() ?? "No time set"
-                           : string.Empty,
-                Q2 = result.TryGetProperty("Q2", out var q2)
-                           ? q2.GetString() ?? "No time set"
-                           : string.Empty,
-                Q3 = result.TryGetProperty("Q3", out var q3)
-                           ? q3.GetString() ?? "No time set"
-                           : string.Empty
+
+                Q1 = result.TryGetProperty("Q1", out var q1) ? q1.GetString() ?? string.Empty : string.Empty,
+                Q2 = result.TryGetProperty("Q2", out var q2) ? q2.GetString() ?? string.Empty : string.Empty,
+                Q3 = result.TryGetProperty("Q3", out var q3) ? q3.GetString() ?? string.Empty : string.Empty
             });
         }
 
-        RaceWeekendQualifyingResult weekendQualiResult = new()
+        return new RaceWeekendQualifyingResult
         {
-            Season = int.Parse(raceWeekend.GetProperty("season").GetString()),
-            Round = int.Parse(raceWeekend.GetProperty("round").GetString()),
-            Name = raceWeekend.GetProperty("raceName").GetString() ?? "unknown",
+            Season = raceWeekend.TryGetProperty("season", out var seasonProp) &&
+                     int.TryParse(seasonProp.GetString(), out var parsedSeason)
+                ? parsedSeason : 0,
+
+            Round = raceWeekend.TryGetProperty("round", out var roundProp) &&
+                    int.TryParse(roundProp.GetString(), out var parsedRound)
+                ? parsedRound : 0,
+
+            Name = raceWeekend.TryGetProperty("raceName", out var raceName)
+                ? raceName.GetString() ?? "unknown" : "unknown",
+
             Results = qualiResult
         };
-        return weekendQualiResult;
     }
-
 
     public async Task<int> GetNumberOfCompletedRaceWeekendsAsync(int? year = null)
     {
-
-        var results = await _ergast.GetJsonAsync($"https://api.jolpi.ca/ergast/f1/{year.ToString() ?? "current"}/last/results.json");
+        var results = await _ergast.GetJsonAsync($"https://api.jolpi.ca/ergast/f1/{year?.ToString() ?? "current"}/last/results.json");
 
         using var doc = JsonDocument.Parse(results);
 
         var lastRound = doc.RootElement
-                            .GetProperty("MRData")
-                            .GetProperty("RaceTable")
-                            .GetProperty("Races")
-                            .EnumerateArray()
-                            .First()
-                            .GetProperty("round")
-                            .GetString();
+            .GetProperty("MRData")
+            .GetProperty("RaceTable")
+            .GetProperty("Races")
+            .EnumerateArray()
+            .FirstOrDefault();
 
-        return int.Parse(lastRound);
+        if (lastRound.ValueKind == JsonValueKind.Undefined)
+            return 0;
+
+        return lastRound.TryGetProperty("round", out var round) &&
+               int.TryParse(round.GetString(), out var parsed)
+            ? parsed : 0;
     }
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import RaceResultsTable from "../components/RaceResultsTable";
 import QualifyingResultsTable from "../components/QualifyingResultsTable";
 
@@ -19,12 +19,19 @@ export default function ResultPage() {
     const [selectedRound, setSelectedRound] = useState<number | null>(null);
     const [selectedSession, setSelectedSession] = useState<string | null>(null);
 
+    const pendingRoundRef = useRef<number | null>(null);
+
     useEffect(() => {
         fetch(`/api/race/${year}`)
             .then(res => res.json())
             .then((data: Weekend[]) => {
                 setWeekends(data);
-                if (data.length > 0) {
+                if (pendingRoundRef.current !== null) {
+                    const weekend = data.find(w => w.round === pendingRoundRef.current);
+                    setSelectedRound(pendingRoundRef.current);
+                    setSelectedSession(weekend?.sessions.at(-1) ?? null);
+                    pendingRoundRef.current = null;
+                } else if (data.length > 0) {
                     const latest = data[data.length - 1];
                     setSelectedRound(latest.round);
                     setSelectedSession(latest.sessions[latest.sessions.length - 1]);
@@ -43,9 +50,13 @@ export default function ResultPage() {
 
         if (roundInput) {
             const round = Math.max(1, Number(roundInput));
-            setSelectedRound(round);
-            const weekend = weekends.find(w => w.round === round);
-            if (weekend) setSelectedSession(weekend.sessions[weekend.sessions.length - 1]);
+            if (resolvedYear === year) {
+                const weekend = weekends.find(w => w.round === round);
+                setSelectedRound(round);
+                setSelectedSession(weekend?.sessions.at(-1) ?? null);
+            } else {
+                pendingRoundRef.current = round;
+            }
         }
     };
 
@@ -93,18 +104,21 @@ export default function ResultPage() {
                 {selectedWeekend && (
                     <div className="flex flex-col gap-1">
                         <label className="text-xs uppercase tracking-widest text-zinc-400">Session</label>
-                        {selectedWeekend.sessions.map(session => (
-                            <button
-                                key={session}
-                                onClick={() => setSelectedSession(session)}
-                                className={`text-left px-3 py-1.5 rounded-lg text-sm transition-colors ${selectedSession === session
-                                    ? "bg-red-600 text-white"
-                                    : "text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white"
-                                    }`}
-                            >
-                                {session}
-                            </button>
-                        ))}
+                        {["Qualifying", "Sprint", "Race"]
+                            .filter(s => s !== "Sprint" || selectedWeekend.sessions.includes("Sprint"))
+                            .map(session => (
+                                <button
+                                    key={session}
+                                    onClick={() => setSelectedSession(session)}
+                                    className={`text-left px-3 py-1.5 rounded-lg text-sm transition-colors ${selectedSession === session
+                                        ? "bg-red-600 text-white"
+                                        : "text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white"
+                                        }`}
+                                >
+                                    {session}
+                                </button>
+                            ))
+                        }
                     </div>
                 )}
             </aside>
@@ -122,8 +136,12 @@ export default function ResultPage() {
 
                 {loading ? (
                     <div className="text-zinc-400 animate-pulse">Loading races...</div>
-                ) : selectedSession === null ? (
-                    <div className="text-zinc-400">Select a session to view results.</div>
+                ) : !selectedSession ? (
+                    <div className="text-zinc-400">
+                        {weekends.some(w => w.round === selectedRound)
+                            ? "Select a session to view results."
+                            : "No results available for this round."}
+                    </div>
                 ) : isQualifying ? (
                     <QualifyingResultsTable
                         key={`${year}-${selectedRound}-${selectedSession}`} year={year} round={selectedRound!} session={selectedSession} />

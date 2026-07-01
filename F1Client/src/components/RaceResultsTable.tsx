@@ -4,6 +4,7 @@ interface RaceResultEntry {
     position: number;
     driver: string;
     team: string;
+    status: string;
     time: string;
     points: number;
     fastestLap: boolean;
@@ -55,12 +56,14 @@ export default function RaceResultsTable({ year, round, session }: Props) {
                                     : entry.position === 3 ? <span className="text-amber-600 font-bold">3</span>
                                         : <span className="text-zinc-400">{entry.position}</span>}
                         </td>
-                        <td className="py-2 pr-8 flex items-center gap-2">
-                            <span className="font-semibold text-zinc-900 dark:text-white">{entry.driver}</span>
-                            {entry.fastestLap && <span className="text-purple-400 text-xs">⬤</span>}
+                        <td className="py-2 pr-8">
+                            <div className="flex items-center gap-2">
+                                <span className="font-semibold text-zinc-900 dark:text-white">{entry.driver}</span>
+                                {entry.fastestLap && <span className="text-purple-400 text-xs">⬤</span>}
+                            </div>
                         </td>
                         <td className="py-2 pr-8 text-zinc-500 dark:text-zinc-400">{entry.team}</td>
-                        <td className="py-2 pr-4 text-right font-mono text-zinc-600 dark:text-zinc-300">{entry.time}</td>
+                        <td className="py-2 pr-4 text-right font-mono text-zinc-600 dark:text-zinc-300">{entry.time || entry.status}</td>
                         <td className="py-2 text-right font-semibold text-zinc-900 dark:text-white">{entry.points}</td>
                     </tr>
                 ))}
