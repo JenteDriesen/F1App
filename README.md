@@ -7,7 +7,8 @@ A personal F1 tracking web app built with React/TypeScript and .NET/C#.
 - Drivers Championship standings (any year, any round)
 - Next race weekend info with countdown timers
 - Circuit map and weekend weather forecast
-- Race results (coming soon)
+- Race, sprint and qualifying results (any year, any round)
+- Constructor Championship standings (any year, any round) (coming soon)
 - Light/dark mode
 
 ## Tech Stack
