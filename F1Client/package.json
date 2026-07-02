@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"dotnet run --project ../F1Web\" \"wait-on http-get://localhost:5063/api/standings && vite --open\""
+    "dev": "concurrently \"dotnet run --project ../F1Web\" \"wait-on http-get://localhost:5063/api/standings/WDC  && vite --open\""
   },
   "dependencies": {
     "bootstrap-icons": "^1.13.1",

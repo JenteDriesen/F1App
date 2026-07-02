@@ -8,6 +8,7 @@ export default function Navbar() {
         <nav className="fixed top-0 left-0 right-0 z-50 flex items-center gap-4 px-6 h-16 bg-zinc-100/90 dark:bg-zinc-900/90 backdrop-blur-sm border-b-8 border-double border-red-600">
             <Link to="/" className="font-bold text-zinc-900 dark:text-white">Home</Link>
             <Link to="/DriversStandings" className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">WDC</Link>
+            <Link to="/ConstructorsStandings" className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">WCC</Link>
             <Link to="/Results" className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">Results</Link>
             <Link to="/NextRace" className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">Next Race</Link>
             <button onClick={toggle} className="ml-auto text-sm px-3 py-1 rounded border border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">

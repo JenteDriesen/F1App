@@ -1,15 +1,15 @@
 import { useState, useEffect } from "react";
-import DriverStandingsTable, { type DriverStandingDto } from "../components/DriverStandingsTable";
+import ConstructorStandingsTable, { type ConstructorStandingDto } from "../components/ConstructorStandingsTable";
 
-export default function DriversStandingsPage() {
+export default function ConstructorsStandingsPage() {
     const currentYear = new Date().getFullYear();
     const [year, setYear] = useState<number>(currentYear);
     const [race, setRace] = useState<number | null>(null);
-    const [standings, setStandings] = useState<DriverStandingDto[]>([]);
+    const [standings, setStandings] = useState<ConstructorStandingDto[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch("/api/standings/WDC")
+        fetch("/api/standings/WCC")
             .then(res => res.json())
             .then(data => {
                 setStandings(data);
@@ -27,7 +27,7 @@ export default function DriversStandingsPage() {
         if (year) params.append("year", resolvedYear.toString());
         if (race) params.append("race", race.toString());
 
-        const url = params.toString() ? `/api/standings/WDC?${params.toString()}` : "/api/standings/WDC";
+        const url = params.toString() ? `/api/standings/WCC?${params.toString()}` : "/api/standings/WCC";
 
         fetch(url)
             .then(res => {
@@ -90,7 +90,7 @@ export default function DriversStandingsPage() {
             </aside>
 
             <div className="flex-1 min-w-0 ml-56">
-                <DriverStandingsTable standings={standings} year={year ?? currentYear} />
+                <ConstructorStandingsTable standings={standings} year={year ?? currentYear} />
             </div>
         </div>
     );

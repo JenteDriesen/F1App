@@ -2,6 +2,7 @@ import './App.css'
 import Dashboard from './pages/Dashboard'
 import { Routes, Route } from 'react-router-dom';
 import DriversStandingsPage from './pages/DriversStandingsPage';
+import ConstructorsStandingsPage from './pages/ConstructorsStandingsPage';
 import NextWeekendInfoPage from './pages/NextWeekendInfoPage';
 import ResultPage from './pages/ResultPage';
 import NavBar from './components/navbar';
@@ -23,6 +24,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/DriversStandings" element={<DriversStandingsPage />} />
+          <Route path="/ConstructorsStandings" element={<ConstructorsStandingsPage />} />
           <Route path="/NextRace" element={<NextWeekendInfoPage />} />
           <Route path="/Results" element={<ResultPage />} />
         </Routes>

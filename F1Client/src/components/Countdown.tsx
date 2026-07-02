@@ -35,7 +35,7 @@ export default function CountDown({ name, sessionDateTime }: CountDownProps) {
     const isRace = name.toLowerCase().includes("prix");
 
     return (
-        <div className="rounded-xl border-2 border-red-600 p-4 bg-white dark:bg-zinc-800 text-center">
+        <div className="rounded-xl border-2 border-red-600 p-4 bg-white dark:bg-zinc-800 text-center flex-1">
             <p className="text-xs uppercase tracking-widest text-zinc-400 mb-1">
                 {isRace ? "Race" : "Next session"}
             </p>

@@ -15,10 +15,18 @@ namespace F1Web.Controllers
             _standingsService = standingsService;
         }
 
-        [HttpGet]
+        [HttpGet("WDC")]
         public async Task<IActionResult> GetDriverStandings(int? year = null, int? race = null)
         {
             var data = await _standingsService.GetDriverStandingsAsync(year, race);
+
+            return Ok(data);
+        }
+
+        [HttpGet("WCC")]
+        public async Task<IActionResult> GetConstructorStandings(int? year = null, int? race = null)
+        {
+            var data = await _standingsService.GetConstructorStandingsAsync(year, race);
 
             return Ok(data);
         }
