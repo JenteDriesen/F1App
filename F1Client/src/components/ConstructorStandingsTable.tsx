@@ -17,7 +17,9 @@ interface Props {
 export default function ConstructorStandingsTable({ standings, year }: Props) {
     const currentYear = new Date().getFullYear();
 
-    if (standings.length === 0) return <p className="text-zinc-500 dark:text-zinc-400">Season {year ?? currentYear} hasn't started yet.</p>;
+    if (standings.length === 0)
+        return <p className="text-zinc-500 dark:text-zinc-400">
+            {year && year < currentYear ? `No data available for the ${year} season.` : `Season ${year ?? currentYear} hasn't started yet.`}</p>;
 
     return (
         <div className="flex flex-col">

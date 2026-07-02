@@ -148,7 +148,7 @@ export default function ResultPage() {
             {/* Main content */}
             <div className="flex-1 min-w-0 ml-56">
                 {selectedWeekend && (
-                    <div className="mb-6 border-b border-zinc-200 dark:border-zinc-700 pb-4">
+                    <div className="mb-6">
                         <p className="text-xs uppercase tracking-widest text-red-600 mb-1">
                             Round {selectedWeekend.round} · {selectedSession}
                         </p>
