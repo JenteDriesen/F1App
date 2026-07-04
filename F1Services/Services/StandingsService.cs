@@ -114,22 +114,48 @@ public class StandingsService : IStandingsService
             return new List<DriverStandingDto>();
 
         return standingsList[0]
-            .GetProperty("DriverStandings")
-            .EnumerateArray()
-            .Select((d, i) => new DriverStandingDto
-            {
-                Position = i + 1,
-                Points = decimal.Parse(d.GetProperty("points").GetString(), CultureInfo.InvariantCulture),
-                Wins = int.Parse(d.GetProperty("wins").GetString()),
-                DriverId = d.GetProperty("Driver").GetProperty("driverId").GetString(),
-                Code = d.GetProperty("Driver").TryGetProperty("code", out var code) ? code.GetString() : null,
-                Name = $"{d.GetProperty("Driver").GetProperty("givenName").GetString()} {d.GetProperty("Driver").GetProperty("familyName").GetString()}",
-                Nationality = d.GetProperty("Driver").GetProperty("nationality").GetString(),
-                Constructor = d.GetProperty("Constructors")[0].GetProperty("name").GetString(),
-                ConstructorNationality = d.GetProperty("Constructors")[0].GetProperty("nationality").GetString(),
-                WikiUrl = d.GetProperty("Driver").GetProperty("url").GetString()
-            })
-            .ToList();
+                .GetProperty("DriverStandings")
+                .EnumerateArray()
+                .Select((d, i) =>
+                {
+                    var driver = d.TryGetProperty("Driver", out var driverEl) ? driverEl : default;
+                    var constructor = d.TryGetProperty("Constructors", out var constructors)
+                                    && constructors.GetArrayLength() > 0
+                                    ? constructors[0] : default;
+
+                    return new DriverStandingDto
+                    {
+                        Position = i + 1,
+
+                        Points = d.TryGetProperty("points", out var points) &&
+                                 decimal.TryParse(points.GetString(), NumberStyles.Any, CultureInfo.InvariantCulture, out var parsedPoints)
+                                ? parsedPoints : 0,
+
+                        Wins = d.TryGetProperty("wins", out var wins) &&
+                               int.TryParse(wins.GetString(), out var parsedWins)
+                                ? parsedWins : 0,
+
+                        DriverId = driver.TryGetProperty("driverId", out var driverId)
+                                ? driverId.GetString() ?? "unknown" : "unknown",
+
+                        Name = driver.ValueKind != JsonValueKind.Undefined
+                                ? $"{(driver.TryGetProperty("givenName", out var given) ? given.GetString() : "")} {(driver.TryGetProperty("familyName", out var family) ? family.GetString() : "")}".Trim()
+                                : "unknown",
+
+                        Nationality = driver.TryGetProperty("nationality", out var driverNat)
+                                ? driverNat.GetString() ?? "unknown" : "unknown",
+
+                        Constructor = constructor.TryGetProperty("name", out var constructorName)
+                                ? constructorName.GetString() ?? "unknown" : "unknown",
+
+                        ConstructorNationality = constructor.TryGetProperty("nationality", out var constructorNat)
+                                ? constructorNat.GetString() ?? "unknown" : "unknown",
+
+                        WikiUrl = driver.TryGetProperty("url", out var wikiUrl)
+                                ? wikiUrl.GetString() ?? "unknown" : "unknown"
+                    };
+                })
+                .ToList();
     }
 
     private List<ConstructorStandingDto> MapConstructorStandings(string json)
@@ -147,17 +173,30 @@ public class StandingsService : IStandingsService
         return standingsList[0]
             .GetProperty("ConstructorStandings")
             .EnumerateArray()
-            .Select((c, i) => new ConstructorStandingDto
+            .Select((c, i) =>
             {
-                Position = i + 1,
-                Points = decimal.Parse(c.TryGetProperty("points", out var points) ? points.GetString() : "0", CultureInfo.InvariantCulture),
-                Wins = int.Parse(c.TryGetProperty("wins", out var wins) ? wins.GetString() : "0"),
-                ConstructorId = c.TryGetProperty("Constructor", out var constructor) ? constructor.TryGetProperty("constructorId", out var constructorId) ? constructorId.GetString() : null : null,
-                Name = c.TryGetProperty("Constructor", out var constructor1) ? constructor1.TryGetProperty("name", out var name) ? name.GetString() : null : null,
-                Nationality = c.TryGetProperty("Constructor", out var constructor2) ? constructor2.TryGetProperty("nationality", out var nationality) ? nationality.GetString() : null : null,
-                WikiUrl = c.TryGetProperty("Constructor", out var constructor3) ? constructor3.TryGetProperty("url", out var url) ? url.GetString() : null : null
+                var constructor = c.TryGetProperty("Constructor", out var team) ? team : default;
+
+                return new ConstructorStandingDto
+                {
+                    Position = i + 1,
+                    Points = c.TryGetProperty("points", out var points) &&
+                            decimal.TryParse(points.GetString(), NumberStyles.Any, CultureInfo.InvariantCulture, out var parsedPoints)
+                            ? parsedPoints : 0,
+                    Wins = int.TryParse(c.TryGetProperty("wins", out var wins) ? wins.GetString() : "0", out var parsedWins)
+                            ? parsedWins : 0,
+                    ConstructorId = constructor.TryGetProperty("constructorId", out var constructorId)
+                            ? constructorId.GetString() ?? "unknown" : "unknown",
+                    Name = constructor.TryGetProperty("name", out var name)
+                            ? name.GetString() ?? "unknown" : "unknown",
+                    Nationality = constructor.TryGetProperty("nationality", out var nationality)
+                            ? nationality.GetString() ?? "unknown" : "unknown",
+                    WikiUrl = constructor.TryGetProperty("url", out var url)
+                            ? url.GetString() ?? "unknown" : "unknown"
+                };
             })
             .ToList();
     }
 }
+
 
