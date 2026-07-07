@@ -1,6 +1,6 @@
 # F1 App
 
-A personal F1 tracking web app built with React/TypeScript and .NET/C#.
+A personal Formula 1 web application built with React and ASP.NET Core. The backend aggregates, processes and caches data from external APIs before exposing it through its own REST API.
 
 ## Features
 
@@ -8,13 +8,14 @@ A personal F1 tracking web app built with React/TypeScript and .NET/C#.
 - Next race weekend info with countdown timers
 - Circuit map and weekend weather forecast
 - Race, sprint and qualifying results (any year, any round)
-- Constructor Championship standings (any year, any round) (coming soon)
+- Constructor Championship standings (any year, any round)
+- Server-side caching to reduce external API requests
 - Light/dark mode
 
 ## Tech Stack
 
 **Frontend:** React, TypeScript, Vite, Tailwind CSS  
-**Backend:** .NET 9, C#, ASP.NET Core  
+**Backend:** .NET 9, C#, ASP.NET Core Web API, IMemoryCache 
 **Data:** Ergast F1 API, Open-Meteo weather API, OpenStreetMap
 
 ## Getting Started
@@ -32,9 +33,11 @@ npm install
 npm run dev
 ```
 
-The app will open at `http://localhost:5173`.
+This starts both the React frontend and the ASP.NET Core backend.
+The application will be available at http://localhost:5173.
 
 ## Project Structure
+The application follows a layered architecture, separating the frontend, API, business logic and data access into dedicated projects.
 
 ```
 F1/
