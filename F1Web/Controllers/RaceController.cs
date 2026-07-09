@@ -86,5 +86,11 @@ namespace F1Web.Controllers
         {
             return Ok(await _raceService.GetCompletedRaceWeekendsAsync(year));
         }
+
+        [HttpGet("{circuitId}/lastYearPodium")]
+        public async Task<IActionResult> GetLastYearPodium(string circuitId)
+        {
+            return Ok(await _raceService.GetLastYearPodiumAsync(circuitId));
+        }
     }
 }

@@ -152,12 +152,41 @@ public partial class RaceService : IRaceService
                             return new RaceWeekendDto
                             {
                                 Name = r.Name,
+                                CircuitId = r.Circuit.Id,
                                 Round = r.Round,
                                 Sessions = sessions
                             };
                         })
                         .ToList();
                 }) ?? throw new InvalidOperationException($"Completed race weekends data was not generated or returned null for key '{completedRaceWeekendsCacheKey}'.");
+    }
+
+    public async Task<List<PodiumDto>> GetLastYearPodiumAsync(string circuitId)
+    {
+        string lastYearPodiumCacheKey = $"lastYearPodium_{circuitId}";
+
+        return await _cache.GetOrCreateAsync(lastYearPodiumCacheKey, async (entry) =>
+                {
+                    entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(300);
+
+                    var weekends = await _raceRepository.GetRaceWeekendsAsync(DateTime.Now.Year - 1);
+
+                    var lastYearRound = weekends
+                                        .Where(r => r.Circuit.Id == circuitId)
+                                        .Max(r => r.Round);
+
+                    var lastYearResults = await _raceRepository.GetRaceResultsAsync(DateTime.Now.Year - 1, lastYearRound, "race");
+
+                    return lastYearResults.Results
+                            .Where(r => r.Position <= 3)
+                            .Select(r => new PodiumDto
+                            {
+                                Position = r.Position,
+                                Driver = $"{r.Driver.GivenName} {r.Driver.FamilyName}",
+                                Team = r.Constructor.Name
+                            })
+                            .ToList();
+                }) ?? throw new InvalidOperationException($"Last year podium data was not generated or returned null for key '{lastYearPodiumCacheKey}'.");
     }
 
     [GeneratedRegex("(\\B[A-Z])")]
