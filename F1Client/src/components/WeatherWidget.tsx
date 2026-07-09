@@ -41,7 +41,7 @@ export default function WeatherWidget() {
     if (loading) return <p className="text-zinc-500 dark:text-zinc-400">Loading weekend weather...</p>;
 
     return (
-        <div className="rounded-xl  p-4 bg-white dark:bg-zinc-800">
+        <div className="rounded-xl p-4 bg-white dark:bg-zinc-800">
             <p className="text-xs uppercase tracking-widest text-zinc-400 mb-3">Weekend weather</p>
             <div className="flex gap-4 mb-6">
                 <DailyWeatherCard day={daily!} index={0} />

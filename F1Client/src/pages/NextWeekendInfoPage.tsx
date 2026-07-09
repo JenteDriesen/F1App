@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import MiniMap from "../components/MiniMap";
 import DailyWeatherCard from "../components/DailyWeatherCard";
 import HourlyWeatherCard from "../components/HourlyWeatherCard";
-import CountDown from "../components/Countdown";
+import SessionSchedule from "../components/SessionSchedule";
 
 interface Session {
     name: string;
@@ -52,24 +52,22 @@ interface HourlyWeather {
 
 export default function NextWeekendInfoPage() {
     const [loading, setLoading] = useState(true);
-    const [nextRace, setNextRace] = useState<Session | null>(null);
-    const [nextSession, setNextSession] = useState<Session | null>(null);
     const [nextWeekendInfo, setNextWeekendInfo] = useState<WeekendInfo | null>(null);
     const [daily, setDaily] = useState<DailyWeather | null>(null);
     const [hourly, setHourly] = useState<HourlyWeather | null>(null);
 
     useEffect(() => {
         Promise.all([
-            fetch("/api/race/nextSessionRace").then(res => res.json()),
-            fetch("/api/race/nextRaceweekend").then(res => res.json()),
-            fetch("/api/race/raceWeekendWeather").then(res => res.json()),
-            fetch("/api/race/raceDayWeather").then(res => res.json()),
-        ]).then(([sessionRaceData, weekendData, dailyData, hourlyData]) => {
-            setNextSession(sessionRaceData.nextSession);
-            setNextRace(sessionRaceData.nextRace);
+            fetch("/api/race/nextRaceweekend").then(res => { if (!res.ok) throw new Error("nextRaceweekend"); return res.json(); }),
+            fetch("/api/race/raceWeekendWeather").then(res => { if (!res.ok) throw new Error("raceWeekendWeather"); return res.json(); }),
+            fetch("/api/race/raceDayWeather").then(res => { if (!res.ok) throw new Error("raceDayWeather"); return res.json(); }),
+        ]).then(([weekendData, dailyData, hourlyData]) => {
             setNextWeekendInfo(weekendData);
             setDaily(dailyData);
             setHourly(hourlyData);
+            setLoading(false);
+        }).catch(err => {
+            console.error("Failed:", err.message);
             setLoading(false);
         });
     }, []);
@@ -91,28 +89,27 @@ export default function NextWeekendInfoPage() {
             </div>
 
             <div className="flex flex-col lg:flex-row gap-4 items-start">
-                {/* Left column */}
-                <div className="flex flex-col gap-4 lg:w-2/5 shrink-0 min-w-[30rem]">
+                <div className="flex flex-col gap-4 lg:w-1/2 w-full shrink-0 min-w-[30rem]">
                     <MiniMap lat={lat} lng={lng} />
-                    {nextSession && nextRace && nextSession.sessionDateTime !== nextRace.sessionDateTime && (
-                        <CountDown name={nextSession.name} sessionDateTime={nextSession.sessionDateTime} />
-                    )}
-                    {nextRace && (
-                        <CountDown name={nextRace.name} sessionDateTime={nextRace.sessionDateTime} />
-                    )}
                 </div>
 
-                {/* Right column - weather */}
-                <div className="flex-1 rounded-xl p-4 bg-white dark:bg-zinc-800 min-w-[30rem]">
-                    <p className="text-xs uppercase tracking-widest text-zinc-400 mb-4">Weekend weather</p>
-                    {daily && (
-                        <div className="flex gap-4 mb-6">
-                            <DailyWeatherCard day={daily} index={0} />
-                            <DailyWeatherCard day={daily} index={1} />
-                        </div>
-                    )}
-                    {hourly && <HourlyWeatherCard hourly={hourly} />}
+                <div className="lg:flex-1 lg:border-l border-t lg:border-t-0 border-zinc-200 dark:border-zinc-700 lg:pl-4 pt-4 lg:pt-0 w-full lg:w-auto">
+                    <SessionSchedule
+                        sessions={nextWeekendInfo.sessions}
+                        raceDateTime={nextWeekendInfo.raceDateTime}
+                    />
                 </div>
+            </div>
+
+            <div className="flex-1 rounded-xl p-4 bg-white dark:bg-zinc-800 min-w-[30rem]">
+                <p className="text-xs uppercase tracking-widest text-zinc-400 mb-4">Weekend weather</p>
+                {daily && (
+                    <div className="flex gap-4 mb-6">
+                        <DailyWeatherCard day={daily} index={0} />
+                        <DailyWeatherCard day={daily} index={1} />
+                    </div>
+                )}
+                {hourly && <HourlyWeatherCard hourly={hourly} />}
             </div>
         </div>
     );
