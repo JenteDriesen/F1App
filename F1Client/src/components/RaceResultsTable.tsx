@@ -73,7 +73,7 @@ export default function RaceResultsTable({ year, round, session }: Props) {
                             </div>
                         </td>
                         <td className="py-2 pr-8 text-zinc-500 dark:text-zinc-400">{entry.team}</td>
-                        <td className="py-2 pr-4 text-right font-mono text-zinc-600 dark:text-zinc-300">{entry.time || entry.status}</td>
+                        <td className="py-2 pr-4 text-right font-mono text-zinc-600 dark:text-zinc-300 min-w-[7rem]">{entry.time || entry.status}</td>
                         <td className="py-2 text-right font-semibold text-zinc-900 dark:text-white">{entry.points}</td>
                     </tr>
                 ))}
