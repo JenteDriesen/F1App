@@ -3,6 +3,7 @@ import MiniMap from "../components/MiniMap";
 import DailyWeatherCard from "../components/DailyWeatherCard";
 import HourlyWeatherCard from "../components/HourlyWeatherCard";
 import SessionSchedule from "../components/SessionSchedule";
+import LastYearPodium from "../components/LastYearPodium";
 
 interface Session {
     name: string;
@@ -89,15 +90,14 @@ export default function NextWeekendInfoPage() {
             </div>
 
             <div className="flex flex-col lg:flex-row gap-4 items-start">
-                <div className="flex flex-col gap-4 lg:w-1/2 w-full shrink-0 min-w-[30rem]">
+                <div className="lg:w-1/3 w-full shrink-0">
                     <MiniMap lat={lat} lng={lng} />
                 </div>
-
-                <div className="lg:flex-1 lg:border-l border-t lg:border-t-0 border-zinc-200 dark:border-zinc-700 lg:pl-4 pt-4 lg:pt-0 w-full lg:w-auto">
-                    <SessionSchedule
-                        sessions={nextWeekendInfo.sessions}
-                        raceDateTime={nextWeekendInfo.raceDateTime}
-                    />
+                <div className="lg:flex-1 w-full">
+                    <SessionSchedule sessions={nextWeekendInfo.sessions} raceDateTime={nextWeekendInfo.raceDateTime} />
+                </div>
+                <div className="lg:flex-1 w-full">
+                    <LastYearPodium circuitId={nextWeekendInfo.circuit.id} />
                 </div>
             </div>
 

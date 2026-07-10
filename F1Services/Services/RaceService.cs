@@ -172,8 +172,11 @@ public partial class RaceService : IRaceService
                     var weekends = await _raceRepository.GetRaceWeekendsAsync(DateTime.Now.Year - 1);
 
                     var lastYearRound = weekends
-                                        .Where(r => r.Circuit.Id == circuitId)
-                                        .Max(r => r.Round);
+                                        .FirstOrDefault(r => r.Circuit.Id == circuitId)?
+                                        .Round ?? 0;
+
+                    if (lastYearRound == 0)
+                        return [];
 
                     var lastYearResults = await _raceRepository.GetRaceResultsAsync(DateTime.Now.Year - 1, lastYearRound, "race");
 
