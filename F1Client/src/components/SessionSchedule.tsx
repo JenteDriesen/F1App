@@ -21,6 +21,7 @@ const SESSION_LABELS: Record<string, string> = {
 };
 
 const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+const shortenedTimeZone = new Date().toLocaleString('en', { timeZoneName: 'short' })?.split(" ").at(-1);
 
 function formatUserTime(dateStr: string): { day: string; time: string } {
     const date = new Date(dateStr);
@@ -42,7 +43,7 @@ export default function SessionSchedule({ sessions, raceDateTime }: Props) {
     return (
         <div className="flex flex-col justify-between h-full min-w-[20rem]">
             <p className="text-xs uppercase tracking-widest text-zinc-400 mb-3">
-                Schedule · {userTimeZone.split("/").at(-1)?.replace("_", " ")}
+                Schedule · {shortenedTimeZone}
             </p>
             <div className="flex flex-col gap-1 flex-1">
                 {allSessions.map((session) => {
