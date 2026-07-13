@@ -75,20 +75,20 @@ export default function NextWeekendInfoPage() {
             </div>
 
             <div className="flex flex-col gap-4">
-                <div className="flex flex-col lg:flex-row gap-6 items-start">
-                    <div className="lg:w-1/2 w-full shrink-0">
+                <div className="flex flex-col md:flex-row gap-6 items-start">
+                    <div className="md:flex-1 w-full shrink-0 py-4">
                         <MiniMap lat={lat} lng={lng} />
                     </div>
-                    <div className="lg:flex-1 w-full">
+                    <div className="md:flex-1 w-full">
                         <SessionSchedule sessions={nextWeekendInfo.sessions} raceDateTime={nextWeekendInfo.raceDateTime} />
                     </div>
                 </div>
 
-                <div className="flex flex-col lg:flex-row gap-6">
-                    <div className="flex-1 w-full lg:w-2/3 rounded-xl p-4 bg-white dark:bg-zinc-800 min-w-[30rem]">
+                <div className="flex flex-col md:flex-row gap-6">
+                    <div className="md:flex-1 w-full rounded-xl py-4 bg-white dark:bg-zinc-800">
                         {hourly && <WeatherWidget weather={hourly} />}
                     </div>
-                    <div className="lg:flex-1 w-full">
+                    <div className="md:flex-1 w-full">
                         <LastYearPodium circuitId={nextWeekendInfo.circuit.id} />
                     </div>
                 </div>

@@ -41,7 +41,7 @@ export default function SessionSchedule({ sessions, raceDateTime }: Props) {
     const nextSession = allSessions.find(s => new Date(s.sessionDateTime) > now);
 
     return (
-        <div className="flex flex-col justify-between h-full min-w-[20rem]">
+        <div className="flex flex-col justify-between h-full min-w-sm max-w-lg">
             <p className="text-xs uppercase tracking-widest text-zinc-400 mb-3">
                 Schedule · {shortenedTimeZone}
             </p>
