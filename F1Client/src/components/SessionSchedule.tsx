@@ -57,7 +57,7 @@ export default function SessionSchedule({ sessions, raceDateTime }: Props) {
                         <div
                             key={`${session.name}-${session.sessionDateTime}`}
                             className={`flex items-center justify-between px-3 py-1.5 rounded-lg text-sm transition-colors ${isNext
-                                ? "bg-red-600/10 border border-red-600/30 text-zinc-900 dark:text-white"
+                                ? "bg-red-600/10 border border-red-600/60 text-zinc-900 dark:text-white"
                                 : isPast
                                     ? "text-zinc-400 dark:text-zinc-600"
                                     : "text-zinc-600 dark:text-zinc-300"

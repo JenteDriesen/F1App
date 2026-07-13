@@ -112,7 +112,15 @@ export default function WeatherWidget({ weather }: Props) {
                     return (
                         <div
                             key={i}
-                            className={`flex flex-col flex-1 ${!isLast ? "border-r border-zinc-200 dark:border-zinc-700" : ""} ${isStart ? "border rounded border-red-400 dark:border-red-600 bg-red-600/10 dark:bg-red-600/20" : ""}`}
+                            className={`flex flex-col flex-1 
+                                ${isStart
+                                    ? "border rounded border-red-600/60 bg-red-600/10 dark:bg-red-600/20"
+                                    : i === 1  // column before start
+                                        ? "" // no border-r, start column's border-l covers it
+                                        : !isLast
+                                            ? "border-r border-zinc-200 dark:border-zinc-700"
+                                            : ""
+                                }`}
                         >
                             {/* Time */}
                             <div
