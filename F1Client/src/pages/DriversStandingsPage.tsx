@@ -42,8 +42,8 @@ export default function DriversStandingsPage() {
     if (loading) return <div className="text-zinc-500 dark:text-zinc-400 p-8"></div>;
 
     return (
-        <div className="py-6 min-h-screen">
-            <aside className="w-48 shrink-0 border-r border-zinc-200 dark:border-zinc-700 pr-4 flex flex-col gap-4 fixed top-20  bottom-4 left-6">
+        <div className="py-6 min-h-screen flex gap-8 items-start">
+            <aside className="w-44 shrink-0 border-r border-zinc-200 dark:border-zinc-700 pr-4 flex flex-col gap-4 sticky top-20 bottom-4 self-start min-h-[calc(100vh-6rem)]">
                 <div className="flex flex-col gap-1">
                     <label className="text-xs uppercase tracking-widest text-zinc-400">Year</label>
                     <input
@@ -89,7 +89,7 @@ export default function DriversStandingsPage() {
                 </button>
             </aside>
 
-            <div className="flex-1 min-w-0 ml-56">
+            <div className="flex-1 min-w-0 overflow-x-auto mx-auto max-w-3xl">
                 <DriverStandingsTable standings={standings} year={year ?? currentYear} />
             </div>
         </div>

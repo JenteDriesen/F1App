@@ -79,9 +79,9 @@ export default function ResultPage() {
     const isRace = selectedSession === "Race" || selectedSession === "Sprint";
 
     return (
-        <div className="py-6 min-h-screen">
+        <div className="py-6 min-h-screen flex gap-8 items-start">
             {/* Sidebar */}
-            <aside className="w-48 shrink-0 border-r border-zinc-200 dark:border-zinc-700 pr-4 flex flex-col gap-4 fixed top-20 bottom-4 left-6">
+            <aside className="w-44 shrink-0 border-r border-zinc-200 dark:border-zinc-700 pr-4 flex flex-col gap-4 sticky top-20 bottom-4 self-start min-h-[calc(100vh-6rem)]">
                 <div className="flex flex-col gap-1">
                     <label className="text-xs uppercase tracking-widest text-zinc-400">Year</label>
                     <input
@@ -146,7 +146,7 @@ export default function ResultPage() {
             </aside>
 
             {/* Main content */}
-            <div className="flex-1 min-w-0 ml-56">
+            <div className="flex-1 min-w-0 overflow-x-auto mx-auto max-w-3xl">
                 {selectedWeekend && (
                     <div className="mb-6">
                         <p className="text-xs uppercase tracking-widest text-red-600 mb-1">
@@ -165,12 +165,9 @@ export default function ResultPage() {
                             : "No results available for this round."}
                     </div>
                 ) : isQualifying ? (
-                    <QualifyingResultsTable
-                        year={year} round={selectedRound!} session={selectedSession} />
+                    <QualifyingResultsTable year={year} round={selectedRound!} session={selectedSession} />
                 ) : isRace ? (
-                    <RaceResultsTable
-                        year={year} round={selectedRound!} session={selectedSession}
-                    />
+                    <RaceResultsTable year={year} round={selectedRound!} session={selectedSession} />
                 ) : (
                     <div className="text-zinc-400">No results available for this session.</div>
                 )}

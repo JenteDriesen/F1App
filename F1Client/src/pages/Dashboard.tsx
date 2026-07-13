@@ -36,14 +36,14 @@ export default function Dashboard() {
             </div>
 
             <div className="flex flex-col lg:flex-row gap-4">
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 mx-auto">
                     <Link to="/DriversStandings" className="block h-full no-underline">
                         <div className="h-full rounded-xl border-2 border-red-600 p-4 bg-white dark:bg-zinc-800 hover:shadow-md transition-shadow">
                             <DriverStandingsTable standings={WDC} />
                         </div>
                     </Link>
                 </div>
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 mx-auto">
                     <Link to="/ConstructorsStandings" className="block h-full no-underline">
                         <div className="h-full rounded-xl border-2 border-red-600 p-4 bg-white dark:bg-zinc-800 hover:shadow-md transition-shadow">
                             <ConstructorStandingsTable standings={WCC} />

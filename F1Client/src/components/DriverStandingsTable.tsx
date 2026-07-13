@@ -31,11 +31,11 @@ export default function DriverStandingsTable({ standings, year }: Props) {
             <table className="w-full max-w-2xl text-sm">
                 <thead>
                     <tr className="text-xs uppercase tracking-widest text-zinc-400 border-b border-zinc-200 dark:border-zinc-700">
-                        <th className="pb-2 pr-4 text-left">Pos</th>
-                        <th className="pb-2 pr-8 text-left">Driver</th>
-                        <th className="pb-2 pr-8 text-left">Team</th>
-                        <th className="pb-2 pr-4 text-right">Points</th>
-                        <th className="pb-2 text-right">Wins</th>
+                        <th className="pb-2 w-10 text-left">Pos</th>
+                        <th className="pb-2 w-48 text-left">Driver</th>
+                        <th className="pb-2 w-40 text-left">Team</th>
+                        <th className="pb-2 w-20 text-right">Points</th>
+                        <th className="pb-2 w-10 text-right">Wins</th>
                     </tr>
                 </thead>
                 <tbody>

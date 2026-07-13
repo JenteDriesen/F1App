@@ -51,7 +51,7 @@ export default function RaceResultsTable({ year, round, session }: Props) {
                     <th className="pb-2 pr-8 text-left">Driver</th>
                     <th className="pb-2 pr-8 text-left">Team</th>
                     <th className="pb-2 pr-4 text-right">Time</th>
-                    <th className="pb-2 text-right">Pts</th>
+                    <th className="pb-2 text-right">Points</th>
                 </tr>
             </thead>
             <tbody>
