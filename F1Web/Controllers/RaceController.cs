@@ -33,7 +33,7 @@ namespace F1Web.Controllers
             return Ok(data);
         }
 
-        [HttpGet("raceWeekendWeather")]
+        /* [HttpGet("raceWeekendWeather")]
         public async Task<IActionResult> GetRaceWeekendWeather()
         {
             var weekend = await _raceService.GetNextRaceweekendAsync();
@@ -46,9 +46,9 @@ namespace F1Web.Controllers
             var data =
                 await _weatherService.GetRaceWeekendWeatherAsync(lat, lng, startDate, endDate);
             return Ok(data);
-        }
+        } */
 
-        [HttpGet("raceDayWeather")]
+        /* [HttpGet("raceDayWeather")]
         public async Task<IActionResult> GetRaceDayWeather()
         {
             var weekend = await _raceService.GetNextRaceweekendAsync();
@@ -56,13 +56,19 @@ namespace F1Web.Controllers
             var lat = weekend.Circuit.Location.Latitude;
             var lng = weekend.Circuit.Location.Longitude;
 
-            var date = weekend.RaceDateTime.ToString("yyy-MM-ddTHH:mm");
-            var nextDay = weekend.RaceDateTime.AddDays(1).ToString("yyy-MM-dd");
+            var date = weekend.RaceDateTime.ToString("yyyy-MM-ddTHH:mm");
+            var nextDay = weekend.RaceDateTime.AddDays(1).ToString("yyyy-MM-dd");
 
             var data =
                 await _weatherService.GetRaceDayWeatherDetailAsync(lat, lng, date, nextDay);
 
             return Ok(data);
+        } */
+
+        [HttpGet("sessionWeather")]
+        public async Task<IActionResult> GetSessionWeather()
+        {
+            return Ok(await _weatherService.GetSessionWeatherAsync());
         }
 
         [HttpGet("{year}/{race}/results/{session}")]
@@ -85,6 +91,12 @@ namespace F1Web.Controllers
         public async Task<IActionResult> GetCompletedRaceWeekends(int year)
         {
             return Ok(await _raceService.GetCompletedRaceWeekendsAsync(year));
+        }
+
+        [HttpGet("{circuitId}/lastYearPodium")]
+        public async Task<IActionResult> GetLastYearPodium(string circuitId)
+        {
+            return Ok(await _raceService.GetLastYearPodiumAsync(circuitId));
         }
     }
 }

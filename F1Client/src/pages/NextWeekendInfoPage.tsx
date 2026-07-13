@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import MiniMap from "../components/MiniMap";
-import DailyWeatherCard from "../components/DailyWeatherCard";
-import HourlyWeatherCard from "../components/HourlyWeatherCard";
 import SessionSchedule from "../components/SessionSchedule";
+import LastYearPodium from "../components/LastYearPodium";
+import WeatherWidget from "../components/WeatherWidget";
 
 interface Session {
     name: string;
@@ -30,17 +30,6 @@ interface WeekendInfo {
     sessions: Session[];
 }
 
-interface DailyWeather {
-    date: string[];
-    temperatureMax: number[];
-    temperatureMin: number[];
-    precipitationSum: number[];
-    precipitationProbabilityMax: number[];
-    precipitationHours: number[];
-    windDirectionDominant: number[];
-    windSpeedMax: number[];
-}
-
 interface HourlyWeather {
     hour: string[];
     temperature: number[];
@@ -53,17 +42,14 @@ interface HourlyWeather {
 export default function NextWeekendInfoPage() {
     const [loading, setLoading] = useState(true);
     const [nextWeekendInfo, setNextWeekendInfo] = useState<WeekendInfo | null>(null);
-    const [daily, setDaily] = useState<DailyWeather | null>(null);
-    const [hourly, setHourly] = useState<HourlyWeather | null>(null);
+    const [hourly, setHourly] = useState<Record<string, HourlyWeather> | null>(null);
 
     useEffect(() => {
         Promise.all([
             fetch("/api/race/nextRaceweekend").then(res => { if (!res.ok) throw new Error("nextRaceweekend"); return res.json(); }),
-            fetch("/api/race/raceWeekendWeather").then(res => { if (!res.ok) throw new Error("raceWeekendWeather"); return res.json(); }),
-            fetch("/api/race/raceDayWeather").then(res => { if (!res.ok) throw new Error("raceDayWeather"); return res.json(); }),
-        ]).then(([weekendData, dailyData, hourlyData]) => {
+            fetch("/api/race/sessionWeather").then(res => { if (!res.ok) throw new Error("sessionWeather"); return res.json(); }),
+        ]).then(([weekendData, hourlyData]) => {
             setNextWeekendInfo(weekendData);
-            setDaily(dailyData);
             setHourly(hourlyData);
             setLoading(false);
         }).catch(err => {
@@ -88,28 +74,24 @@ export default function NextWeekendInfoPage() {
                 </p>
             </div>
 
-            <div className="flex flex-col lg:flex-row gap-4 items-start">
-                <div className="flex flex-col gap-4 lg:w-1/2 w-full shrink-0 min-w-[30rem]">
-                    <MiniMap lat={lat} lng={lng} />
-                </div>
-
-                <div className="lg:flex-1 lg:border-l border-t lg:border-t-0 border-zinc-200 dark:border-zinc-700 lg:pl-4 pt-4 lg:pt-0 w-full lg:w-auto">
-                    <SessionSchedule
-                        sessions={nextWeekendInfo.sessions}
-                        raceDateTime={nextWeekendInfo.raceDateTime}
-                    />
-                </div>
-            </div>
-
-            <div className="flex-1 rounded-xl p-4 bg-white dark:bg-zinc-800 min-w-[30rem]">
-                <p className="text-xs uppercase tracking-widest text-zinc-400 mb-4">Weekend weather</p>
-                {daily && (
-                    <div className="flex gap-4 mb-6">
-                        <DailyWeatherCard day={daily} index={0} />
-                        <DailyWeatherCard day={daily} index={1} />
+            <div className="flex flex-col gap-4">
+                <div className="flex flex-col md:flex-row gap-6 items-start">
+                    <div className="md:flex-1 w-full shrink-0 py-4">
+                        <MiniMap lat={lat} lng={lng} />
                     </div>
-                )}
-                {hourly && <HourlyWeatherCard hourly={hourly} />}
+                    <div className="md:flex-1 w-full">
+                        <SessionSchedule sessions={nextWeekendInfo.sessions} raceDateTime={nextWeekendInfo.raceDateTime} />
+                    </div>
+                </div>
+
+                <div className="flex flex-col md:flex-row gap-6">
+                    <div className="md:flex-1 w-full rounded-xl py-4 bg-white dark:bg-zinc-800">
+                        {hourly && <WeatherWidget weather={hourly} />}
+                    </div>
+                    <div className="md:flex-1 w-full">
+                        <LastYearPodium circuitId={nextWeekendInfo.circuit.id} />
+                    </div>
+                </div>
             </div>
         </div>
     );

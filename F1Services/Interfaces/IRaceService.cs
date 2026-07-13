@@ -11,4 +11,5 @@ public interface IRaceService
     Task<List<QualifyingResultDto>> GetQualifyingResultsAsync(int? year, int? race, string? session);
     Task<List<RaceResultDto>> GetRaceResultsAsync(int? year, int? race, string? session);
     Task<List<RaceWeekendDto>> GetCompletedRaceWeekendsAsync(int? year);
+    Task<List<PodiumDto>> GetLastYearPodiumAsync(string circuitId);
 }

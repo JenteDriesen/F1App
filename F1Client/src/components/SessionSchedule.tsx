@@ -21,6 +21,7 @@ const SESSION_LABELS: Record<string, string> = {
 };
 
 const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+const shortenedTimeZone = new Date().toLocaleString('en', { timeZoneName: 'short' })?.split(" ").at(-1);
 
 function formatUserTime(dateStr: string): { day: string; time: string } {
     const date = new Date(dateStr);
@@ -40,9 +41,9 @@ export default function SessionSchedule({ sessions, raceDateTime }: Props) {
     const nextSession = allSessions.find(s => new Date(s.sessionDateTime) > now);
 
     return (
-        <div className="flex flex-col justify-between h-full min-w-[20rem]">
+        <div className="flex flex-col justify-between h-full min-w-sm max-w-lg">
             <p className="text-xs uppercase tracking-widest text-zinc-400 mb-3">
-                Schedule · {userTimeZone.split("/").at(-1)?.replace("_", " ")}
+                Schedule · {shortenedTimeZone}
             </p>
             <div className="flex flex-col gap-1 flex-1">
                 {allSessions.map((session) => {
@@ -56,7 +57,7 @@ export default function SessionSchedule({ sessions, raceDateTime }: Props) {
                         <div
                             key={`${session.name}-${session.sessionDateTime}`}
                             className={`flex items-center justify-between px-3 py-1.5 rounded-lg text-sm transition-colors ${isNext
-                                ? "bg-red-600/10 border border-red-600/30 text-zinc-900 dark:text-white"
+                                ? "bg-red-600/10 border border-red-600/60 text-zinc-900 dark:text-white"
                                 : isPast
                                     ? "text-zinc-400 dark:text-zinc-600"
                                     : "text-zinc-600 dark:text-zinc-300"

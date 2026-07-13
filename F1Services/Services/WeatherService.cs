@@ -10,15 +10,51 @@ namespace F1Services.Models;
 public class WeatherService : IWeatherService
 {
     private readonly IWeatherRepository _weather;
+    private readonly IRaceService _raceService;
     private readonly IMemoryCache _cache;
 
-    public WeatherService(IWeatherRepository weatherRepo, IMemoryCache cache)
+    public WeatherService(IWeatherRepository weatherRepo, IRaceService raceService, IMemoryCache cache)
     {
         _weather = weatherRepo;
+        _raceService = raceService;
         _cache = cache;
     }
 
-    public async Task<DailyWeatherDto> GetRaceWeekendWeatherAsync(decimal lat, decimal lng, string startDate, string endDate)
+    public async Task<Dictionary<string, RaceWeatherDto>> GetSessionWeatherAsync()
+    {
+        // TODO
+        // get nextraceweekend data service.GetNextRaceweekendAsync
+        // this has circuit lat, long
+        //          sessions name, date time
+        //from here you can get the weather for each session in the way of getracedatweatherasync
+        // return dictionary of sessions and weather
+        // ???
+        // profit
+        // ez
+
+        var weekend = await _raceService.GetNextRaceweekendAsync();
+        var lat = weekend.Circuit.Location.Latitude;
+        var lng = weekend.Circuit.Location.Longitude;
+
+        var allSessions = weekend.Sessions
+            .Select(s => (s.Name, s.SessionDateTime))
+            .Append(("Race", weekend.RaceDateTime))
+            .ToList();
+
+        var result = new Dictionary<string, RaceWeatherDto>();
+
+        foreach (var (name, dateTime) in allSessions)
+        {
+            var start = dateTime.ToString("yyyy-MM-ddTHH:mm");
+            var end = dateTime.AddDays(1).ToString("yyyy-MM-dd");
+            result[name] = await GetSessionsWeatherAsync(lat, lng, start, end);
+        }
+
+        return result;
+        throw new NotImplementedException();
+    }
+
+    /* public async Task<DailyWeatherDto> GetRaceWeekendWeatherAsync(decimal lat, decimal lng, string startDate, string endDate)
     {
         string dailyWeatherCacheKey = $"dailyWeather_{lat:F4}_{lng:F4}_{startDate}_{endDate}";
 
@@ -30,12 +66,13 @@ public class WeatherService : IWeatherService
 
                     return MapDailyWeatherDto(weather);
                 }) ?? throw new InvalidOperationException($"Weather data was not generated or returned null for key '{dailyWeatherCacheKey}'.");
-    }
+    } */
 
-    public async Task<RaceWeatherDto> GetRaceDayWeatherDetailAsync(decimal lat, decimal lng, string dateTime, string nextDay)
+    public async Task<RaceWeatherDto> GetSessionsWeatherAsync(decimal lat, decimal lng, string dateTime, string nextDay)
     {
         var date = dateTime.Split("T")[0];
-        string raceWeatherCacheKey = $"raceWeather_{lat:F4}_{lng:F4}_{date}";
+        var sessionHour = DateTime.Parse(dateTime).Hour;
+        string raceWeatherCacheKey = $"raceWeather_{lat:F4}_{lng:F4}_{date}_{sessionHour}";
 
         return await _cache.GetOrCreateAsync(raceWeatherCacheKey, async (entry) =>
                         {
@@ -47,7 +84,7 @@ public class WeatherService : IWeatherService
                         }) ?? throw new InvalidOperationException($"Weather data was not generated or returned null for key '{raceWeatherCacheKey}'.");
     }
 
-    private DailyWeatherDto MapDailyWeatherDto(string json)
+    /* private DailyWeatherDto MapDailyWeatherDto(string json)
     {
         using var doc = JsonDocument.Parse(json);
         var daily = doc.RootElement.GetProperty("daily");
@@ -87,7 +124,7 @@ public class WeatherService : IWeatherService
                         .Select(d => d.GetDouble())
                         .ToList()
         };
-    }
+    } */
 
     private RaceWeatherDto MapRaceWeatherDto(string weather, string dateTime)
     {
@@ -95,11 +132,14 @@ public class WeatherService : IWeatherService
 
         var hourly = doc.RootElement.GetProperty("hourly");
 
+        var sessionHour = DateTime.Parse(dateTime);
+        var roundedHour = new DateTime(sessionHour.Year, sessionHour.Month, sessionHour.Day, sessionHour.Hour, 0, 0).ToString("yyyy-MM-ddTHH:mm");
+
         var raceStartIndex = hourly.GetProperty("time")
-                              .EnumerateArray()
-                              .Select(d => d.GetString() ?? "")
-                              .ToList()
-                              .FindIndex(t => t == dateTime);
+            .EnumerateArray()
+            .Select(d => d.GetString() ?? "")
+            .ToList()
+            .FindIndex(t => t == roundedHour);
 
         int startHour = Math.Max(0, raceStartIndex - 2);
         int count = 6;
