@@ -4,11 +4,10 @@ A personal Formula 1 web application built with React and ASP.NET Core. The back
 
 ## Features
 
-- Drivers Championship standings (any year, any round)
-- Next race weekend info with countdown timers
-- Circuit map and weekend weather forecast
+- Drivers and Constructors Championship standings (any year, any round)
 - Race, sprint and qualifying results (any year, any round)
-- Constructor Championship standings (any year, any round)
+- Next race weekend info with session schedule, circuit map and last year's podium
+- Per-session weather forecasts for the race weekend
 - Server-side caching to reduce external API requests
 - Light/dark mode
 
