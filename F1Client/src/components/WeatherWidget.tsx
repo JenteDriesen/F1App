@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
 import { IconTemperature, IconUmbrella, IconDroplet, IconWind } from "@tabler/icons-react";
-import { type HourlyWeather } from "../types";
+import { type SessionWeather } from "../types/race";
 
 interface Props {
-    weather: Record<string, HourlyWeather>;
+    weather: Record<string, SessionWeather>;
 }
 
 const SESSION_LABELS: Record<string, string> = {
