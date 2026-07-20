@@ -38,7 +38,7 @@ export default function WeatherWidget({ weather }: Props) {
     const [selected, setSelected] = useState(defaultSession);
     const activeSession = sessions.includes(selected) ? selected : defaultSession;
     const hourly = weather[activeSession];
-    const hours = useMemo(() => Array.from({ length: hourly.hour.length }), [hourly.hour.length]);
+    const hours = useMemo(() => Array.from({ length: hourly?.hour.length ?? 0 }), [hourly?.hour.length]);
 
     if (!hourly) return <p className="text-zinc-500 dark:text-zinc-400 text-sm">No data available, try refreshing.</p>;
 
