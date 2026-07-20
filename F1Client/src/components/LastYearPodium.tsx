@@ -52,7 +52,7 @@ export default function LastYearPodium({ circuitId }: Props) {
         <div className="flex flex-col gap-5">
             <p className="text-xs uppercase tracking-widest text-zinc-400">Last year's podium</p>
 
-            <div className="flex items-end justify-center gap-2">
+            <div className="flex items-end justify-center gap-2 py-10">
                 {[2, 1, 3].map(pos => {
                     const entry = podium.find(p => p.position === pos);
                     if (!entry) return null;

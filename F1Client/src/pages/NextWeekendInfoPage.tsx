@@ -3,95 +3,114 @@ import MiniMap from "../components/MiniMap";
 import SessionSchedule from "../components/SessionSchedule";
 import LastYearPodium from "../components/LastYearPodium";
 import WeatherWidget from "../components/WeatherWidget";
+import Card from "../components/Card";
+import type { SessionWeather, WeekendInfo } from "../types/race";
 
-interface Session {
-    name: string;
-    sessionDateTime: string;
-}
-
-interface LocationInfo {
-    latitude: number;
-    longitude: number;
-    locality: string;
-    country: string;
-}
-
-interface CircuitInfo {
-    id: string;
-    name: string;
-    location: LocationInfo;
-}
-
-interface WeekendInfo {
-    season: number;
-    round: number;
-    circuit: CircuitInfo;
-    raceDateTime: string;
-    sessions: Session[];
-}
-
-interface HourlyWeather {
-    hour: string[];
-    temperature: number[];
-    precipitation: number[];
-    precipitationProbability: number[];
-    windSpeed: number[];
-    windDirection: number[];
+async function fetchJson<T>(url: string, signal: AbortSignal): Promise<T> {
+    const res = await fetch(url, { signal });
+    if (!res.ok) throw new Error(`${url} responded ${res.status}`);
+    return res.json() as Promise<T>;
 }
 
 export default function NextWeekendInfoPage() {
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [nextWeekendInfo, setNextWeekendInfo] = useState<WeekendInfo | null>(null);
-    const [hourly, setHourly] = useState<Record<string, HourlyWeather> | null>(null);
+    const [hourly, setHourly] = useState<Record<string, SessionWeather> | null>(null);
 
     useEffect(() => {
-        Promise.all([
-            fetch("/api/race/nextRaceweekend").then(res => { if (!res.ok) throw new Error("nextRaceweekend"); return res.json(); }),
-            fetch("/api/race/sessionWeather").then(res => { if (!res.ok) throw new Error("sessionWeather"); return res.json(); }),
-        ]).then(([weekendData, hourlyData]) => {
-            setNextWeekendInfo(weekendData);
-            setHourly(hourlyData);
+        const controller = new AbortController();
+
+        async function load() {
+            const [weekendRes, weatherRes] = await Promise.allSettled([
+                fetchJson<WeekendInfo>("/api/race/nextRaceweekend", controller.signal),
+                fetchJson<Record<string, SessionWeather>>("/api/race/sessionWeather", controller.signal),
+            ]);
+
+            // Component unmounted while fetching → don't touch state
+            if (controller.signal.aborted) return;
+
+            // Hard dependency: without it the page is meaningless → error state
+            if (weekendRes.status === "fulfilled") {
+                setNextWeekendInfo(weekendRes.value);
+            } else {
+                console.error(weekendRes.reason);
+                setError("Couldn't load the next race weekend.");
+            }
+
+            // Soft dependency: the card renders its own fallback instead
+            if (weatherRes.status === "fulfilled") {
+                setHourly(weatherRes.value);
+            } else {
+                console.error(weatherRes.reason);
+            }
+
             setLoading(false);
-        }).catch(err => {
-            console.error("Failed:", err.message);
-            setLoading(false);
-        });
+        }
+
+        load();
+        return () => controller.abort();
     }, []);
 
-    const lat = nextWeekendInfo?.circuit.location.latitude ?? 0;
-    const lng = nextWeekendInfo?.circuit.location.longitude ?? 0;
+    // Skeleton mirrors the final layout of the page
+    if (loading) {
+        return (
+            <div className="mx-auto max-w-6xl px-6 py-8" role="status" aria-label="Loading">
+                <div className="mb-6 space-y-2">
+                    <div className="h-3 w-24 animate-pulse rounded bg-zinc-200 dark:bg-zinc-700" />
+                    <div className="h-8 w-72 animate-pulse rounded bg-zinc-200 dark:bg-zinc-700" />
+                    <div className="h-4 w-48 animate-pulse rounded bg-zinc-200 dark:bg-zinc-700" />
+                </div>
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-5">
+                    <div className="h-64 animate-pulse rounded-xl bg-zinc-200 md:col-span-2 dark:bg-zinc-700" />
+                    <div className="h-64 animate-pulse rounded-xl bg-zinc-200 md:col-span-3 dark:bg-zinc-700" />
+                    <div className="h-56 animate-pulse rounded-xl bg-zinc-200 md:col-span-3 dark:bg-zinc-700" />
+                    <div className="h-56 animate-pulse rounded-xl bg-zinc-200 md:col-span-2 dark:bg-zinc-700" />
+                </div>
+            </div>
+        );
+    }
 
-    if (loading) return <div className="text-zinc-500 dark:text-zinc-400 p-8">Loading...</div>;
-    if (!nextWeekendInfo) return <p className="text-zinc-500 dark:text-zinc-400 p-8">Not found.</p>;
+    // Loading finished and weekendInfo is still null → the request failed
+    if (error || !nextWeekendInfo) {
+        return (
+            <p className="mx-auto max-w-6xl px-6 py-8 text-red-600">
+                {error ?? "Couldn't load the next race weekend."}
+            </p>
+        );
+    }
+
+    const { circuit } = nextWeekendInfo;
+
+    /* const sessionStarts = Object.fromEntries(
+        nextWeekendInfo.sessions.map(s => [s.name, s.sessionDateTime])
+    ); */
 
     return (
-        <div className="px-6 py-8">
-            <div className="mb-6">
-                <p className="text-xs uppercase tracking-widest text-red-600 mb-1">Round {nextWeekendInfo.round}</p>
-                <h2 className="text-3xl font-bold text-zinc-900 dark:text-white">{nextWeekendInfo.circuit.name}</h2>
+        <div className="mx-auto max-w-6xl px-6 py-8">
+            <header className="mb-6">
+                <p className="mb-1 text-xs uppercase tracking-widest text-red-600">Round {nextWeekendInfo.round}</p>
+                <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">{circuit.name}</h1>
                 <p className="text-zinc-500 dark:text-zinc-400">
-                    {nextWeekendInfo.circuit.location.locality}, {nextWeekendInfo.circuit.location.country} · {nextWeekendInfo.season}
+                    {circuit.location.locality}, {circuit.location.country} · {nextWeekendInfo.season}
                 </p>
-            </div>
+            </header>
 
-            <div className="flex flex-col gap-4">
-                <div className="flex flex-col md:flex-row gap-6 items-start">
-                    <div className="md:flex-1 w-full shrink-0 py-4">
-                        <MiniMap lat={lat} lng={lng} />
-                    </div>
-                    <div className="md:flex-1 w-full">
-                        <SessionSchedule sessions={nextWeekendInfo.sessions} raceDateTime={nextWeekendInfo.raceDateTime} />
-                    </div>
-                </div>
-
-                <div className="flex flex-col md:flex-row gap-6">
-                    <div className="md:flex-1 w-full rounded-xl py-4 bg-white dark:bg-zinc-800">
-                        {hourly && <WeatherWidget weather={hourly} />}
-                    </div>
-                    <div className="md:flex-1 w-full">
-                        <LastYearPodium circuitId={nextWeekendInfo.circuit.id} />
-                    </div>
-                </div>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-5">
+                <Card className="md:col-span-2">
+                    <MiniMap lat={circuit.location.latitude} lng={circuit.location.longitude} />
+                </Card>
+                <Card className="md:col-span-3">
+                    <SessionSchedule sessions={nextWeekendInfo.sessions} raceDateTime={nextWeekendInfo.raceDateTime} />
+                </Card>
+                <Card className="md:col-span-3">
+                    {hourly
+                        ? <WeatherWidget weather={hourly} />
+                        : <p className="text-sm text-zinc-500 dark:text-zinc-400">Weather data unavailable, try refreshing.</p>}
+                </Card>
+                <Card className="md:col-span-2">
+                    <LastYearPodium circuitId={circuit.id} />
+                </Card>
             </div>
         </div>
     );
