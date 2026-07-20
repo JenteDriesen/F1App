@@ -40,7 +40,7 @@ export default function WeatherWidget({ weather }: Props) {
     const hourly = weather[activeSession];
     const hours = useMemo(() => Array.from({ length: hourly.hour.length }), [hourly.hour.length]);
 
-    if (!hourly) return <p className="text-zinc-500 dark:text-zinc-400 text-sm">No data.</p>;
+    if (!hourly) return <p className="text-zinc-500 dark:text-zinc-400 text-sm">No data available, try refreshing.</p>;
 
     return (
         <div>

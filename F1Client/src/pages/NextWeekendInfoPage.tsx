@@ -27,7 +27,7 @@ export default function NextWeekendInfoPage() {
                 fetchJson<Record<string, SessionWeather>>("/api/race/sessionWeather", controller.signal),
             ]);
 
-            // Component unmounted while fetching — don't touch state
+            // Component unmounted while fetching → don't touch state
             if (controller.signal.aborted) return;
 
             // Hard dependency: without it the page is meaningless → error state
@@ -106,7 +106,7 @@ export default function NextWeekendInfoPage() {
                 <Card className="md:col-span-3">
                     {hourly
                         ? <WeatherWidget weather={hourly} />
-                        : <p className="text-sm text-zinc-500 dark:text-zinc-400">Weather data unavailable.</p>}
+                        : <p className="text-sm text-zinc-500 dark:text-zinc-400">Weather data unavailable, try refreshing.</p>}
                 </Card>
                 <Card className="md:col-span-2">
                     <LastYearPodium circuitId={circuit.id} />
